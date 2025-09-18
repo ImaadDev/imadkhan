@@ -26,7 +26,7 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    const text = 'DEV3D.exe --initialized';
+    const text = 'IMAD.exe --initialized';
     let index = 0;
     const timer = setInterval(() => {
       if (index < text.length) {
@@ -138,7 +138,7 @@ const Navbar = () => {
                 
                 <div className="hidden sm:block">
                   <div className="text-xl font-bold text-green-400 tracking-wider group-hover:animate-pulse">
-                    {'<'} DEV3D {' />'}
+                    {'<'} IMAD {' />'}
                   </div>
                   <div className="text-xs text-gray-400 font-mono terminal-cursor">
                     {terminalText}

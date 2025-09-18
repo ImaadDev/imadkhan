@@ -15,7 +15,7 @@ const FrontendRoutes = () => {
             {/* Wrap the entire frontend app with the new layout component */}
             <ThreeDLayout>
                 <Navbar />
-                <div className=' md:mt-10'>
+                <div className='mt-15'>
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/certifications" element={<CertificationsPage />} />
