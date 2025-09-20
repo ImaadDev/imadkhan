@@ -1,0 +1,103 @@
+import Project from '../models/Project.js';
+
+// @desc    Get all Project entries
+// @route   GET /api/projects
+// @access  Public
+export const getProjectEntries = async (req, res) => {
+    try {
+        const projectEntries = await Project.find();
+        res.json(projectEntries);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @desc    Get single Project entry by ID
+// @route   GET /api/projects/:id
+// @access  Public
+export const getProjectEntryById = async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id);
+        if (!project) return res.status(404).json({ msg: 'Project entry not found' });
+        res.json(project);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @desc    Create a Project entry
+// @route   POST /api/projects
+// @access  Public (should be private in a real app)
+export const createProjectEntry = async (req, res) => {
+    const { title, description, imageUrl, projectUrl, githubUrl, tags } = req.body;
+
+    try {
+        const newProject = new Project({
+            title,
+            description,
+            imageUrl,
+            projectUrl,
+            githubUrl,
+            tags,
+        });
+
+        const project = await newProject.save();
+        res.json(project);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @desc    Update a Project entry
+// @route   PUT /api/projects/:id
+// @access  Public (should be private in a real app)
+export const updateProjectEntry = async (req, res) => {
+    const { title, description, imageUrl, projectUrl, githubUrl, tags } = req.body;
+
+    // Build project object
+    const projectFields = {};
+    if (title) projectFields.title = title;
+    if (description) projectFields.description = description;
+    if (imageUrl) projectFields.imageUrl = imageUrl;
+    if (projectUrl) projectFields.projectUrl = projectUrl;
+    if (githubUrl) projectFields.githubUrl = githubUrl;
+    if (tags) projectFields.tags = tags;
+
+    try {
+        let project = await Project.findById(req.params.id);
+
+        if (!project) return res.status(404).json({ msg: 'Project entry not found' });
+
+        project = await Project.findByIdAndUpdate(
+            req.params.id,
+            { $set: projectFields },
+            { new: true }
+        );
+
+        res.json(project);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @desc    Delete a Project entry
+// @route   DELETE /api/projects/:id
+// @access  Public (should be private in a real app)
+export const deleteProjectEntry = async (req, res) => {
+    try {
+        let project = await Project.findById(req.params.id);
+
+        if (!project) return res.status(404).json({ msg: 'Project entry not found' });
+
+        await Project.findByIdAndDelete(req.params.id);
+
+        res.json({ msg: 'Project entry removed' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};

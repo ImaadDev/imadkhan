@@ -11,7 +11,7 @@ const Navbar = () => {
   const navigationItems = [
     { name: 'HOME', path: '/', icon: Terminal, code: 'cd ~/' },
     { name: 'ABOUT', path: '/about', icon: User, code: 'cat about.md' },
-    { name: 'CERTS', path: '/certifications', icon: Award, code: 'ls certificates/' },
+    { name: 'CERTIFICATIONS', path: '/certifications', icon: Award, code: 'ls certificates/' },
     { name: 'PROJECTS', path: '/projects', icon: FolderOpen, code: 'git status' },
     { name: 'BLOGS', path: '/blogs', icon: FileText, code: 'vim posts.js' },
     { name: 'CONTACT', path: '/contact', icon: Mail, code: 'ping contact' },

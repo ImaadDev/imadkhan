@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Navbar from './components/Navbar';
 import CertificationsPage from './pages/CertificationsPage';
@@ -6,28 +6,35 @@ import ProjectsPage from './pages/ProjectsPage';
 import BlogsPage from './pages/BlogsPage';
 import AboutMePage from './pages/AboutMePage';
 import ContactUsPage from './pages/ContactUsPage';
-import ThreeDLayout from './components/ThreeDLayout'; // Import the new layout component
+import ThreeDLayout from './components/ThreeDLayout';
 import Footer from './components/Footer';
+import LoginPage from './pages/LoginPage';
 
 const FrontendRoutes = () => {
+    const location = useLocation();
+    const hideLayout = location.pathname === '/login'; // hide navbar/footer on login page
+
     return (
-        <Router>
-            {/* Wrap the entire frontend app with the new layout component */}
-            <ThreeDLayout>
-                <Navbar />
-                <div className='mt-15'>
-                    <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/certifications" element={<CertificationsPage />} />
-                        <Route path="/projects" element={<ProjectsPage />} />
-                        <Route path="/blogs" element={<BlogsPage />} />
-                        <Route path="/about" element={<AboutMePage />} />
-                        <Route path="/contact" element={<ContactUsPage />} />
-                    </Routes>
-                </div>
-                <Footer/>
-            </ThreeDLayout>
-        </Router>
+        <ThreeDLayout>
+            {/* Only show navbar if not on login page */}
+            {!hideLayout && <Navbar />}
+
+            {/* Main content */}
+            <div className='mt-15'>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/certifications" element={<CertificationsPage />} />
+                    <Route path="/projects" element={<ProjectsPage />} />
+                    <Route path="/blogs" element={<BlogsPage />} />
+                    <Route path="/about" element={<AboutMePage />} />
+                    <Route path="/contact" element={<ContactUsPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                </Routes>
+            </div>
+
+            {/* Only show footer if not on login page */}
+            {!hideLayout && <Footer />}
+        </ThreeDLayout>
     );
 };
 
