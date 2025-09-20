@@ -198,7 +198,7 @@ const Navbar = () => {
             {/* Social Links - Desktop */}
             <div className="hidden lg:flex items-center space-x-3">
               <a
-                href="https://github.com"
+                href="https://github.com/ImaadDev"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 text-green-400 hover:text-green-300 hover:bg-green-400/10 border border-transparent hover:border-green-400/30 transition-all duration-300"
@@ -206,7 +206,7 @@ const Navbar = () => {
                 <Github className="w-5 h-5" />
               </a>
               <a
-                href="https://linkedin.com"
+                href="https://www.linkedin.com/in/imad-hussain-khan-76388b305"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 text-green-400 hover:text-green-300 hover:bg-green-400/10 border border-transparent hover:border-green-400/30 transition-all duration-300"
