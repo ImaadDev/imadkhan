@@ -10,7 +10,7 @@ export const AdminAuthProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
-    const BackendUrl = 'http://localhost:5000';
+    const BackendUrl = import.meta.env.VITE_BACKEND_URL;
 
     // Ensure axios sends cookies with requests
     axios.defaults.withCredentials = true;
