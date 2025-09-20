@@ -61,12 +61,15 @@ export const loginUser = async (req, res) => {
 // @route   GET /api/users/logout
 // @access  Private
 export const logoutUser = async (req, res) => {
-    res.cookie('token', 'none', {
-        expires: new Date(Date.now() + 10 * 1000),
-        httpOnly: true,
+    res.cookie("token", "none", {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
     });
-    res.status(200).json({ message: 'Logged out successfully' });
-};
+    res.status(200).json({ message: "Logged out successfully" });
+  };
+  
 
 // @desc    Get current logged in user
 // @route   GET /api/users/me
@@ -76,22 +79,25 @@ export const getMe = async (req, res) => {
 };
 
 // Get token from model, create cookie and send response
+// Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
     const token = user.getSignedJwtToken();
-
+  
     const options = {
-        expires: new Date(
-            Date.now() + (process.env.JWT_COOKIE_EXPIRE || 7) * 24 * 60 * 60 * 1000
-        ),
-        httpOnly: true,
+      expires: new Date(
+        Date.now() + (process.env.JWT_COOKIE_EXPIRE || 7) * 24 * 60 * 60 * 1000
+      ),
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // 👈 important
+      secure: process.env.NODE_ENV === "production", // 👈 required for HTTPS
     };
-
-    if (process.env.NODE_ENV === 'production') {
-        options.secure = true;
-    }
-
-    res.status(statusCode).cookie('token', token, options).json({
+  
+    res
+      .status(statusCode)
+      .cookie("token", token, options)
+      .json({
         success: true,
         token,
-    });
-};
+      });
+  };
+  
