@@ -18,7 +18,7 @@ const Sidebar = ({ open, onDrawerToggle }) => {
   ];
 
   const systemItems = [
-    { name: 'Settings', path: '/admin/settings', icon: <FolderOpen />, file: 'explorer.exe' },
+    { name: 'Settings', path: '/admin/settings', icon: <FolderOpen />, file: 'setting.exe' },
     { name: 'Logout', path: '/admin/logout', icon: <Activity />, file: 'monitor.sh' },
   ];
 

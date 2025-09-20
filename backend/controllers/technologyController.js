@@ -17,7 +17,8 @@ export const getTechnologyEntries = async (req, res) => {
 // @route   POST /api/technologies
 // @access  Public (should be private in a real app)
 export const createTechnologyEntry = async (req, res) => {
-    const { name, iconUrl } = req.body;
+    const { name } = req.body;
+    const iconUrl = req.file ? req.file.path : req.body.iconUrl; // Use uploaded file path or existing URL
 
     try {
         const newTechnology = new Technology({
@@ -37,12 +38,13 @@ export const createTechnologyEntry = async (req, res) => {
 // @route   PUT /api/technologies/:id
 // @access  Public (should be private in a real app)
 export const updateTechnologyEntry = async (req, res) => {
-    const { name, iconUrl } = req.body;
+    const { name } = req.body;
+    const iconUrl = req.file ? req.file.path : req.body.iconUrl; // Use uploaded file path or existing URL
 
     // Build technology object
     const technologyFields = {};
     if (name) technologyFields.name = name;
-    if (iconUrl) technologyFields.iconUrl = iconUrl;
+    technologyFields.iconUrl = iconUrl; // Always update iconUrl, even if it's null/empty
 
     try {
         let technology = await Technology.findById(req.params.id);

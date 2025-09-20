@@ -9,6 +9,7 @@ import Blogs from './pages/Blogs';
 import Certifications from './pages/Certifications';
 import ProjectsPage from './pages/Projects';
 import TechnologiesPage from './pages/Technologies';
+import SettingsPage from './pages/Settings.jsx';
 
 function AdminRoutes() {
   return (
@@ -21,6 +22,8 @@ function AdminRoutes() {
           <Route path="certifications" element={<Certifications />} />
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="technologies" element={<TechnologiesPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+
         </Route>
 
 

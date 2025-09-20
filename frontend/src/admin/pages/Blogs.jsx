@@ -16,6 +16,7 @@ const AdminBlogManagement = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [searchTerm, setSearchTerm] = useState('');
   const [terminalText, setTerminalText] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null); // New state for selected file
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -178,6 +179,7 @@ const AdminBlogManagement = () => {
         title: '', description: '', longDescription: '', category: '', tags: '', author: '', date: '', featured: false, readTime: '', imageUrl: ''
       });
     }
+    setSelectedFile(null); // Reset selected file on modal open
     setIsModalOpen(true);
   };
 
@@ -185,6 +187,10 @@ const AdminBlogManagement = () => {
     setIsModalOpen(false);
     setCurrentBlog(null);
     setFormData({ title: '', description: '', longDescription: '', category: '', tags: '', author: '', date: '', featured: false, readTime: '', imageUrl: '' });
+  };
+
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
   };
 
   const handleInputChange = (e) => {
@@ -199,16 +205,36 @@ const AdminBlogManagement = () => {
     }
 
     const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-    const blogData = { ...formData, tags: tagsArray, date: new Date(formData.date).toISOString() };
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('longDescription', formData.longDescription);
+    formDataToSend.append('category', formData.category);
+    formDataToSend.append('tags', JSON.stringify(tagsArray)); // Send tags as JSON string
+    formDataToSend.append('author', formData.author);
+    formDataToSend.append('date', new Date(formData.date).toISOString());
+    formDataToSend.append('featured', formData.featured);
+    formDataToSend.append('readTime', formData.readTime);
+
+    if (selectedFile) {
+      formDataToSend.append('imageUrl', selectedFile);
+    } else if (formData.imageUrl) {
+      formDataToSend.append('imageUrl', formData.imageUrl); // Send existing URL if no new file
+    }
 
     setIsLoading(true);
     try {
       if (modalMode === 'add') {
-        const response = await axios.post(`${BackendUrl}/api/blogs`, blogData);
+        const response = await axios.post(`${BackendUrl}/api/blogs`, formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
         setBlogs(prev => [...prev, response.data]);
         showAlert('[SUCCESS]', 'Blog created successfully.');
       } else if (modalMode === 'edit') {
-        const response = await axios.put(`${BackendUrl}/api/blogs/${currentBlog._id}`, blogData);
+        const response = await axios.put(`${BackendUrl}/api/blogs/${currentBlog._id}`, formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
         setBlogs(prev => prev.map(blog => blog._id === currentBlog._id ? response.data : blog));
         showAlert('[SUCCESS]', 'Blog updated successfully.');
       }
@@ -734,16 +760,18 @@ const AdminBlogManagement = () => {
                         />
                       </div>
                       <div>
-                        <label className="flex items-center gap-2 text-green-400 text-sm font-bold mb-2"><Image size={14} /> Image URL [Optional]</label>
+                        <label className="flex items-center gap-2 text-green-400 text-sm font-bold mb-2"><Image size={14} /> Image Upload [Optional]</label>
                         <input
-                          type="url"
+                          type="file"
                           name="imageUrl"
-                          value={formData.imageUrl}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-950/50 border-2 border-green-400/50 focus:border-green-400 text-white p-3 outline-none transition-all placeholder-gray-400/30"
-                          placeholder="https://example.com/image.jpg"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          className="w-full bg-gray-950/50 border-2 border-green-400/50 focus:border-green-400 text-white p-3 outline-none transition-all placeholder-gray-400/30 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
                           disabled={isLoading}
                         />
+                        {formData.imageUrl && !selectedFile && (
+                          <p className="text-gray-500 text-xs mt-2">Current image: <a href={formData.imageUrl} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:underline">View Image</a></p>
+                        )}
                       </div>
                       <div className="md:col-span-2">
                         <div className="bg-green-400/10 border-2 border-green-400/20 p-4">

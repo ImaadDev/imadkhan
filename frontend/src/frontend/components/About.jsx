@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Code, Database, Server, Monitor, Globe, Layers } from 'lucide-react';
 
+
 const About = ({ isVisible, aboutRef }) => {
+  
+
+
   return (
     <section
       id="about"

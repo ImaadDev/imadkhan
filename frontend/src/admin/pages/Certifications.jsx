@@ -16,6 +16,7 @@ const CertificationsPage = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [searchTerm, setSearchTerm] = useState('');
   const [terminalText, setTerminalText] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null); // New state for selected file
   const [formData, setFormData] = useState({
     name: '',
     issuingOrganization: '',
@@ -174,6 +175,7 @@ const CertificationsPage = () => {
         name: '', issuingOrganization: '', issueDate: '', expirationDate: '', credentialID: '', credentialURL: '', imageUrl: '', category: ''
       });
     }
+    setSelectedFile(null); // Reset selected file on modal open
     setIsModalOpen(true);
   };
 
@@ -181,6 +183,10 @@ const CertificationsPage = () => {
     setIsModalOpen(false);
     setCurrentCertification(null);
     setFormData({ name: '', issuingOrganization: '', issueDate: '', expirationDate: '', credentialID: '', credentialURL: '', imageUrl: '', category: '' });
+  };
+
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
   };
 
   const handleInputChange = (e) => {
@@ -194,20 +200,33 @@ const CertificationsPage = () => {
       return;
     }
 
-    const certData = {
-      ...formData,
-      issueDate: formData.issueDate ? new Date(formData.issueDate).toISOString() : undefined,
-      expirationDate: formData.expirationDate ? new Date(formData.expirationDate).toISOString() : undefined
-    };
+    const formDataToSend = new FormData();
+    formDataToSend.append('name', formData.name);
+    formDataToSend.append('issuingOrganization', formData.issuingOrganization);
+    if (formData.issueDate) formDataToSend.append('issueDate', new Date(formData.issueDate).toISOString());
+    if (formData.expirationDate) formDataToSend.append('expirationDate', new Date(formData.expirationDate).toISOString());
+    if (formData.credentialID) formDataToSend.append('credentialID', formData.credentialID);
+    if (formData.credentialURL) formDataToSend.append('credentialURL', formData.credentialURL);
+    if (formData.category) formDataToSend.append('category', formData.category);
+
+    if (selectedFile) {
+      formDataToSend.append('imageUrl', selectedFile);
+    } else if (formData.imageUrl) {
+      formDataToSend.append('imageUrl', formData.imageUrl); // Send existing URL if no new file
+    }
 
     setIsLoading(true);
     try {
       if (modalMode === 'add') {
-        const response = await axios.post(`${BackendUrl}/api/certifications`, certData);
+        const response = await axios.post(`${BackendUrl}/api/certifications`, formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
         setCertifications(prev => [...prev, response.data]);
         showAlert('[SUCCESS]', 'Certification created successfully.');
       } else if (modalMode === 'edit') {
-        const response = await axios.put(`${BackendUrl}/api/certifications/${currentCertification._id}`, certData);
+        const response = await axios.put(`${BackendUrl}/api/certifications/${currentCertification._id}`, formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
         setCertifications(prev => prev.map(cert => cert._id === currentCertification._id ? response.data : cert));
         showAlert('[SUCCESS]', 'Certification updated successfully.');
       }
@@ -672,17 +691,19 @@ const CertificationsPage = () => {
                       </div>
                       <div>
                         <label className="flex items-center gap-2 text-green-400 text-xs sm:text-sm font-bold mb-2">
-                          <Image size={12} /> Image URL
+                          <Image size={12} /> Image Upload
                         </label>
                         <input
-                          type="url"
+                          type="file"
                           name="imageUrl"
-                          value={formData.imageUrl}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-950/50 border-2 border-green-400/50 focus:border-green-400 text-white p-2 sm:p-3 outline-none transition-all placeholder-gray-400/30"
-                          placeholder="https://example.com/image.jpg"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          className="w-full bg-gray-950/50 border-2 border-green-400/50 focus:border-green-400 text-white p-2 sm:p-3 outline-none transition-all placeholder-gray-400/30 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
                           disabled={isLoading}
                         />
+                        {formData.imageUrl && !selectedFile && (
+                          <p className="text-gray-500 text-xs mt-2">Current image: <a href={formData.imageUrl} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:underline">View Image</a></p>
+                        )}
                       </div>
                       <div>
                         <label className="flex items-center gap-2 text-green-400 text-xs sm:text-sm font-bold mb-2">

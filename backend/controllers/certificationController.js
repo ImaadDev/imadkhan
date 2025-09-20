@@ -31,7 +31,8 @@ export const getCertificationEntryById = async (req, res) => {
 // @route   POST /api/certifications
 // @access  Public (should be private in a real app)
 export const createCertificationEntry = async (req, res) => {
-    const { name, issuingOrganization, issueDate, expirationDate, credentialID, credentialURL, imageUrl } = req.body;
+    const { name, issuingOrganization, issueDate, expirationDate, credentialID, credentialURL } = req.body;
+    const imageUrl = req.file ? req.file.path : req.body.imageUrl; // Use uploaded file path or existing URL
 
     try {
         const newCertification = new Certification({
@@ -56,7 +57,8 @@ export const createCertificationEntry = async (req, res) => {
 // @route   PUT /api/certifications/:id
 // @access  Public (should be private in a real app)
 export const updateCertificationEntry = async (req, res) => {
-    const { name, issuingOrganization, issueDate, expirationDate, credentialID, credentialURL, imageUrl } = req.body;
+    const { name, issuingOrganization, issueDate, expirationDate, credentialID, credentialURL } = req.body;
+    const imageUrl = req.file ? req.file.path : req.body.imageUrl; // Use uploaded file path or existing URL
 
     // Build certification object
     const certificationFields = {};
@@ -66,7 +68,7 @@ export const updateCertificationEntry = async (req, res) => {
     if (expirationDate) certificationFields.expirationDate = expirationDate;
     if (credentialID) certificationFields.credentialID = credentialID;
     if (credentialURL) certificationFields.credentialURL = credentialURL;
-    if (imageUrl) certificationFields.imageUrl = imageUrl;
+    certificationFields.imageUrl = imageUrl; // Always update imageUrl, even if it's null/empty
 
     try {
         let certification = await Certification.findById(req.params.id);

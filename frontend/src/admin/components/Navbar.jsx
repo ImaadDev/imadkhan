@@ -1,22 +1,13 @@
 import React, { useState, useContext } from 'react';
-import { Menu, Search, Bell, User, MoreVertical, X, Terminal, Code, LogOut } from 'lucide-react';
+import { Menu, Search, User, MoreVertical, X, Terminal, LogOut } from 'lucide-react';
 import AdminAuthContext from '../context/AdminAuthContext.jsx';
 
 const neonGreen = '#00ff41';
 const matrixGreen = '#00ff00';
 
 const Navbar = ({ onDrawerToggle }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { logout, user } = useContext(AdminAuthContext);
-
-  const handleProfileMenuOpen = () => {
-    setIsMenuOpen(true);
-  };
-
-  const handleMenuClose = () => {
-    setIsMenuOpen(false);
-  };
 
   const handleMobileMenuOpen = () => {
     setIsMobileMenuOpen(true);
@@ -28,7 +19,6 @@ const Navbar = ({ onDrawerToggle }) => {
 
   const handleLogout = async () => {
     await logout();
-    handleMenuClose();
     handleMobileMenuClose();
   };
 
@@ -44,6 +34,7 @@ const Navbar = ({ onDrawerToggle }) => {
           <button 
             onClick={onDrawerToggle} 
             className="md:hidden p-2 text-white hover:bg-gray-900 transition-all duration-200 border border-transparent hover:border-green-400"
+            aria-label="Open sidebar"
           >
             <Menu className="w-6 h-6" style={{ color: neonGreen }} />
           </button>
@@ -63,32 +54,28 @@ const Navbar = ({ onDrawerToggle }) => {
           <div className="flex-grow"></div>
 
           {/* Desktop Icons */}
-          <div className="hidden md:flex items-center space-x-6">
-            <button className="p-3 text-white hover:bg-gray-900 transition-all duration-200 border border-transparent hover:border-green-400">
-              <Search className="w-6 h-6" style={{ color: neonGreen }} />
-            </button>
-            <button className="p-3 text-white hover:bg-gray-900 transition-all duration-200 border border-transparent hover:border-green-400">
-              <Bell className="w-6 h-6" style={{ color: neonGreen }} />
-            </button>
+          <div className="hidden md:flex items-center space-x-4">
+           
+            <span className="font-mono text-sm text-white">{user ? user.name : 'Admin'}</span>
             <button 
-              onClick={handleProfileMenuOpen} 
-              className="flex items-center p-3 text-white hover:bg-gray-900 transition-all duration-200 border border-transparent hover:border-green-400"
+              onClick={handleLogout}
+              className="p-3 text-white hover:bg-gray-900 transition-all duration-200 border border-transparent hover:border-red-400"
+              aria-label="Logout"
             >
-              <User className="w-6 h-6 mr-2" style={{ color: neonGreen }} />
-              <span className="font-mono text-sm">{user ? user.name : 'Admin'}</span>
+              <LogOut className="w-6 h-6" style={{ color: neonGreen }} />
             </button>
           </div>
 
           {/* Mobile Icons */}
           <div className="md:hidden">
-            <button className="p-3 text-white hover:bg-gray-900 transition-all duration-200 border border-transparent hover:border-green-400" onClick={handleMobileMenuOpen}>
+            <button className="p-3 text-white hover:bg-gray-900 transition-all duration-200 border border-transparent hover:border-green-400" onClick={handleMobileMenuOpen} aria-label="Open mobile menu">
               <MoreVertical className="w-6 h-6" style={{ color: neonGreen }} />
             </button>
           </div>
         </div>
 
         {/* Status Bar */}
-        <div className="border-t border-green-400 bg-black px-6 py-2" style={{ 
+        <div className="hidden md:flex border-t border-green-400 bg-black px-6 py-2" style={{ 
           background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.95) 0%, rgba(13, 13, 13, 0.95) 100%)' 
         }}>
           <div className="flex items-center justify-between text-xs font-mono">
@@ -106,36 +93,6 @@ const Navbar = ({ onDrawerToggle }) => {
         </div>
       </nav>
 
-      {/* Profile Menu (for desktop) */}
-      {isMenuOpen && (
-        <div className="absolute top-24 right-6 mt-2 py-2 w-64 bg-black z-30 border border-green-400" style={{ 
-          background: 'linear-gradient(135deg, #000000 0%, #0d0d0d 100%)',
-          boxShadow: `0 8px 30px rgba(0, 255, 65, 0.2)`
-        }}>
-          <div className="px-4 py-2 border-b border-gray-800">
-            <div className="flex items-center space-x-2">
-              <Code className="w-4 h-4" style={{ color: neonGreen }} />
-              <span className="font-mono text-xs" style={{ color: neonGreen }}>USER_MENU</span>
-            </div>
-          </div>
-          <a href="#" className="flex items-center px-4 py-3 text-sm font-mono text-white hover:bg-gray-900 hover:text-green-400 transition-colors border-l-2 border-transparent hover:border-green-400" onClick={handleMenuClose}>
-            <span className="mr-2" style={{ color: neonGreen }}>&gt;</span>
-            profile.exe
-          </a>
-          <a href="#" className="flex items-center px-4 py-3 text-sm font-mono text-white hover:bg-gray-900 hover:text-green-400 transition-colors border-l-2 border-transparent hover:border-green-400" onClick={handleMenuClose}>
-            <span className="mr-2" style={{ color: neonGreen }}>&gt;</span>
-            account.cfg
-          </a>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center px-4 py-3 text-sm font-mono text-white hover:bg-gray-900 hover:text-red-400 transition-colors border-l-2 border-transparent hover:border-red-400 w-full text-left"
-          >
-            <LogOut className="w-4 h-4 mr-2" style={{ color: neonGreen }} />
-            logout.sh
-          </button>
-        </div>
-      )}
-
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="fixed top-0 right-0 h-full w-80 z-30 bg-black border-l border-green-400" style={{ 
@@ -148,25 +105,16 @@ const Navbar = ({ onDrawerToggle }) => {
                 <Terminal className="w-6 h-6 mr-2" style={{ color: neonGreen }} />
                 <span className="font-mono text-sm" style={{ color: neonGreen }}>MOBILE_TERMINAL</span>
               </div>
-              <button onClick={handleMobileMenuClose} className="p-2 text-white hover:bg-gray-900 border border-transparent hover:border-green-400 transition-all">
+              <button onClick={handleMobileMenuClose} className="p-2 text-white hover:bg-gray-900 border border-transparent hover:border-green-400 transition-all" aria-label="Close mobile menu">
                 <X className="w-6 h-6" style={{ color: neonGreen }} />
               </button>
             </div>
             
             <div className="space-y-2">
-              <a href="#" className="flex items-center py-4 px-4 text-white hover:bg-gray-900 hover:text-green-400 transition-colors border border-transparent hover:border-green-400 font-mono" onClick={handleMobileMenuClose}>
-                <Bell className="w-5 h-5 mr-4" style={{ color: neonGreen }} />
-                <span className="mr-2" style={{ color: neonGreen }}>&gt;</span>
-                notifications.log
-              </a>
-              <a href="#" className="flex items-center py-4 px-4 text-white hover:bg-gray-900 hover:text-green-400 transition-colors border border-transparent hover:border-green-400 font-mono" onClick={handleMobileMenuClose}>
-                <User className="w-5 h-5 mr-4" style={{ color: neonGreen }} />
-                <span className="mr-2" style={{ color: neonGreen }}>&gt;</span>
-                user_profile.dat
-              </a>
               <button 
                 onClick={handleLogout}
                 className="flex items-center py-4 px-4 text-white hover:bg-gray-900 hover:text-red-400 transition-colors border border-transparent hover:border-red-400 font-mono w-full text-left"
+                aria-label="Logout"
               >
                 <LogOut className="w-5 h-5 mr-4" style={{ color: neonGreen }} />
                 <span className="mr-2" style={{ color: neonGreen }}>&gt;</span>

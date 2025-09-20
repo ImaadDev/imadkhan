@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import cloudinary from '../config/cloudinary.js'; // Import cloudinary
 
 // @desc    Register a new user
 // @route   POST /api/users/register
@@ -76,6 +77,61 @@ export const logoutUser = async (req, res) => {
 // @access  Private
 export const getMe = async (req, res) => {
     res.status(200).json(req.user);
+};
+
+// @desc    Update user profile image
+// @route   PUT /api/users/profileimage
+// @access  Private/Admin
+export const updateUserImage = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (req.file) {
+            // Delete old image from Cloudinary if it exists
+            if (user.imageUrl) {
+                const publicId = user.imageUrl.split('/').pop().split('.')[0];
+                await cloudinary.uploader.destroy(`ImadPortfolio/${publicId}`);
+            }
+            user.imageUrl = req.file.path;
+        } else if (req.body.imageUrl === '') {
+            // If imageUrl is explicitly set to empty, remove existing image
+            if (user.imageUrl) {
+                const publicId = user.imageUrl.split('/').pop().split('.')[0];
+                await cloudinary.uploader.destroy(`ImadPortfolio/${publicId}`);
+                user.imageUrl = '';
+            }
+        }
+
+        await user.save();
+        res.status(200).json(user);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @desc    Get user about image for public page
+// @route   GET /api/users/aboutimage
+// @access  Public
+export const getUserAboutImage = async (req, res) => {
+    try {
+        // Assuming there's only one primary user for the portfolio, or fetching by a known ID
+        // For now, let's fetch the latest user created
+        const user = await User.findOne().sort({ createdAt: -1 }).select('imageUrl');
+
+        if (!user || !user.imageUrl) {
+            return res.status(404).json({ message: 'About image not found' });
+        }
+
+        res.status(200).json({ imageUrl: user.imageUrl });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server Error');
+    }
 };
 
 // Get token from model, create cookie and send response

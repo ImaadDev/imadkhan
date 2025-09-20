@@ -1,20 +1,35 @@
+/* -------------------------------
+   Import Google Fonts
+---------------------------------*/
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
-
+/* -------------------------------
+   Import TailwindCSS
+---------------------------------*/
 @import "tailwindcss";
 
-/* Keyframes */
-@keyframes gridMove {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(40px, 40px); }
+/* -------------------------------
+   Set Global Fonts & Text Styles
+---------------------------------*/
+* {
+  font-family: 'Montserrat', 'Cairo', sans-serif; /* Apply fonts to all elements */                                 /* Default text color */
+                            /* Improve readability */
+  -ms-overflow-style: none;                        /* Hide scrollbar for IE & Edge */
+  scrollbar-width: none;                           /* Hide scrollbar for Firefox */
 }
 
-/* Hide scrollbar globally */
+
+/* -------------------------------
+   Keyframes for Animations
+---------------------------------*/
+@keyframes gridMove {
+  0% { transform: translate(0, 0); }   /* Start position */
+  100% { transform: translate(40px, 40px); } /* End position */
+}
+
+/* -------------------------------
+   Hide Scrollbar Globally
+---------------------------------*/
 ::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
-}
-
-* {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;     /* Firefox */
 }

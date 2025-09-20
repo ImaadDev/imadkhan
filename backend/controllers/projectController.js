@@ -31,7 +31,8 @@ export const getProjectEntryById = async (req, res) => {
 // @route   POST /api/projects
 // @access  Public (should be private in a real app)
 export const createProjectEntry = async (req, res) => {
-    const { title, description, imageUrl, projectUrl, githubUrl, tags } = req.body;
+    const { title, description, projectUrl, githubUrl, tags } = req.body;
+    const imageUrl = req.file ? req.file.path : req.body.imageUrl; // Use uploaded file path or existing URL
 
     try {
         const newProject = new Project({
@@ -55,13 +56,14 @@ export const createProjectEntry = async (req, res) => {
 // @route   PUT /api/projects/:id
 // @access  Public (should be private in a real app)
 export const updateProjectEntry = async (req, res) => {
-    const { title, description, imageUrl, projectUrl, githubUrl, tags } = req.body;
+    const { title, description, projectUrl, githubUrl, tags } = req.body;
+    const imageUrl = req.file ? req.file.path : req.body.imageUrl; // Use uploaded file path or existing URL
 
     // Build project object
     const projectFields = {};
     if (title) projectFields.title = title;
     if (description) projectFields.description = description;
-    if (imageUrl) projectFields.imageUrl = imageUrl;
+    projectFields.imageUrl = imageUrl; // Always update imageUrl, even if it's null/empty
     if (projectUrl) projectFields.projectUrl = projectUrl;
     if (githubUrl) projectFields.githubUrl = githubUrl;
     if (tags) projectFields.tags = tags;

@@ -31,7 +31,8 @@ export const getBlogEntryById = async (req, res) => {
 // @route   POST /api/blogs
 // @access  Public (should be private in a real app)
 export const createBlogEntry = async (req, res) => {
-    const { title, description, longDescription, category, tags, author, date, featured, readTime, imageUrl } = req.body;
+    const { title, description, longDescription, category, tags, author, date, featured, readTime } = req.body;
+    const imageUrl = req.file ? req.file.path : req.body.imageUrl; // Use uploaded file path or existing URL
 
     try {
         const newBlog = new Blog({
@@ -59,7 +60,8 @@ export const createBlogEntry = async (req, res) => {
 // @route   PUT /api/blogs/:id
 // @access  Public (should be private in a real app)
 export const updateBlogEntry = async (req, res) => {
-    const { title, description, longDescription, category, tags, author, date, featured, readTime, imageUrl } = req.body;
+    const { title, description, longDescription, category, tags, author, date, featured, readTime } = req.body;
+    const imageUrl = req.file ? req.file.path : req.body.imageUrl; // Use uploaded file path or existing URL
 
     // Build blog object
     const blogFields = {};
@@ -72,7 +74,7 @@ export const updateBlogEntry = async (req, res) => {
     if (date) blogFields.date = date;
     if (featured) blogFields.featured = featured;
     if (readTime) blogFields.readTime = readTime;
-    if (imageUrl) blogFields.imageUrl = imageUrl;
+    blogFields.imageUrl = imageUrl; // Always update imageUrl, even if it's null/empty
 
     try {
         let blog = await Blog.findById(req.params.id);

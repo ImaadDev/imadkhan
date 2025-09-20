@@ -1,257 +1,369 @@
-import React, { useRef, useEffect, useState } from 'react';
-import * as THREE from 'three';
+import React, { useState, useEffect, useContext } from 'react';
+import { Code, Terminal, Zap, Activity, ArrowRight, Download, Mail, Github, Linkedin, ChevronDown } from 'lucide-react';
+import axios from 'axios';
+import AuthContext from '../context/AuthContext';
 
-const Hero3D = () => {
-  const mountRef = useRef(null);
-  const sceneRef = useRef(null);
+const ModernHeroSection = () => {
+  const {BackendUrl} = useContext(AuthContext);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [typedText, setTypedText] = useState('');
+  const [aboutImageUrl, setAboutImageUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  const fullText = "Full Stack Developer";
 
   useEffect(() => {
-    if (!mountRef.current) return;
-
-    // Scene setup
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 0);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    
-    mountRef.current.appendChild(renderer.domElement);
-    sceneRef.current = { scene, camera, renderer };
-
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.3);
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0x00ff41, 1);
-    directionalLight.position.set(10, 10, 5);
-    directionalLight.castShadow = true;
-    scene.add(directionalLight);
-
-    const pointLight = new THREE.PointLight(0x00ff41, 0.8, 100);
-    pointLight.position.set(-10, 10, 10);
-    scene.add(pointLight);
-
-    // Create geometric shapes
-    const shapes = [];
-
-    // Floating cubes
-    for (let i = 0; i < 15; i++) {
-      const geometry = new THREE.BoxGeometry(
-        Math.random() * 2 + 0.5,
-        Math.random() * 2 + 0.5,
-        Math.random() * 2 + 0.5
-      );
-      const material = new THREE.MeshLambertMaterial({
-        color: Math.random() > 0.5 ? 0x00ff41 : 0x333333,
-        transparent: true,
-        opacity: Math.random() * 0.8 + 0.2
-      });
-      const cube = new THREE.Mesh(geometry, material);
-      
-      cube.position.x = (Math.random() - 0.5) * 40;
-      cube.position.y = (Math.random() - 0.5) * 20;
-      cube.position.z = (Math.random() - 0.5) * 30;
-      
-      cube.rotation.x = Math.random() * Math.PI;
-      cube.rotation.y = Math.random() * Math.PI;
-      
-      scene.add(cube);
-      shapes.push({ mesh: cube, speed: Math.random() * 0.02 + 0.005 });
-    }
-
-    // Create wireframe spheres
-    for (let i = 0; i < 8; i++) {
-      const geometry = new THREE.SphereGeometry(Math.random() * 3 + 1, 16, 16);
-      const material = new THREE.MeshBasicMaterial({
-        color: 0x00ff41,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.3
-      });
-      const sphere = new THREE.Mesh(geometry, material);
-      
-      sphere.position.x = (Math.random() - 0.5) * 50;
-      sphere.position.y = (Math.random() - 0.5) * 25;
-      sphere.position.z = (Math.random() - 0.5) * 35;
-      
-      scene.add(sphere);
-      shapes.push({ mesh: sphere, speed: Math.random() * 0.01 + 0.002 });
-    }
-
-    // Create tetrahedrons
-    for (let i = 0; i < 10; i++) {
-      const geometry = new THREE.TetrahedronGeometry(Math.random() * 2 + 0.8);
-      const material = new THREE.MeshLambertMaterial({
-        color: 0xffffff,
-        transparent: true,
-        opacity: Math.random() * 0.6 + 0.2
-      });
-      const tetra = new THREE.Mesh(geometry, material);
-      
-      tetra.position.x = (Math.random() - 0.5) * 45;
-      tetra.position.y = (Math.random() - 0.5) * 20;
-      tetra.position.z = (Math.random() - 0.5) * 32;
-      
-      scene.add(tetra);
-      shapes.push({ mesh: tetra, speed: Math.random() * 0.015 + 0.003 });
-    }
-
-    // Position camera
-    camera.position.z = 20;
-    camera.position.y = 2;
-
-    // Animation loop
-    const animate = () => {
-      requestAnimationFrame(animate);
-
-      shapes.forEach(shape => {
-        shape.mesh.rotation.x += shape.speed;
-        shape.mesh.rotation.y += shape.speed * 0.7;
-        shape.mesh.rotation.z += shape.speed * 0.5;
-      });
-
-      renderer.render(scene, camera);
+    const fetchAboutImage = async () => {
+        try {
+            const response = await axios.get(`${BackendUrl}/api/users/aboutimage`);
+            setAboutImageUrl(response.data.imageUrl);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to load about image.');
+            console.error('Error fetching about image:', err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    animate();
+    fetchAboutImage();
+  }, [BackendUrl]);
+  
+  useEffect(() => {
     setIsLoaded(true);
+    
+    // Typing animation
+    let currentIndex = 0;
+    const typeInterval = setInterval(() => {
+      if (currentIndex <= fullText.length) {
+        setTypedText(fullText.substring(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(typeInterval);
+      }
+    }, 100);
 
-    // Handle resize
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
     };
 
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup
+    window.addEventListener('mousemove', handleMouseMove);
+    
     return () => {
-      window.removeEventListener('resize', handleResize);
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement);
-      }
-      renderer.dispose();
+      clearInterval(typeInterval);
+      window.removeEventListener('mousemove', handleMouseMove);
     };
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-black overflow-hidden">
-      {/* 3D Canvas Background */}
-      <div
-        ref={mountRef}
-        className="absolute inset-0 z-0"
-        style={{ background: 'linear-gradient(135deg, #000000 0%, #111111 100%)' }}
-      />
-      
-      {/* Content Overlay */}
-      <div className="relative z-10 flex items-center justify-between min-h-screen px-8 lg:px-16">
-        {/* Left Content */}
-        <div className="flex-1 max-w-3xl">
-          <div className={`transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <h1 className="text-5xl lg:text-7xl font-black mb-6 leading-none">
-              <span className="block bg-gradient-to-r from-green-400 to-white bg-clip-text text-transparent uppercase tracking-wider">
-                FULL STACK
-              </span>
-              <span className="block text-white uppercase tracking-wider">
-                DEVELOPER
-              </span>
-            </h1>
-            
-            <h2 className="text-xl lg:text-2xl text-green-400 mb-8 font-light tracking-wide">
-              MERN Stack • React.js • Next.js
-            </h2>
-            
-            <p className="text-gray-300 text-lg lg:text-xl leading-relaxed mb-10 max-w-2xl">
-              Crafting innovative web applications with cutting-edge technologies. 
-              Specializing in scalable solutions that drive business growth and 
-              deliver exceptional user experiences.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="bg-green-400 text-black px-8 py-4 font-bold text-lg uppercase tracking-wider hover:bg-green-300 transition-all duration-300 transform hover:scale-105">
-                View Projects
-              </button>
-              <button className="border-2 border-green-400 text-green-400 px-8 py-4 font-bold text-lg uppercase tracking-wider hover:bg-green-400 hover:text-black transition-all duration-300">
-                Contact Me
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side - Profile Image */}
-        <div className="hidden lg:block flex-1 max-w-md">
-          <div className={`transition-all duration-1000 delay-500 ${isLoaded ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-            {/* Main Image Container */}
-            <div className="relative">
-              <div className="bg-gray-900 bg-opacity-50 border-2 border-green-400 p-6 relative overflow-hidden">
-                {/* Image Placeholder */}
-                <div className="aspect-square bg-gray-800 border border-green-400/30 relative overflow-hidden">
-                  <img 
-                    src="/api/placeholder/400/400" 
-                    alt="Full Stack Developer Profile"
-                    className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-500"
-                  />
-                  {/* Overlay Effect */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-green-400/20 to-transparent opacity-60"></div>
-                  {/* Corner Decorations */}
-                  <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-green-400"></div>
-                  <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-green-400"></div>
-                  <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-green-400"></div>
-                  <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-green-400"></div>
-                </div>
-                
-                {/* Image Caption */}
-                <div className="mt-4 text-center">
-                  <div className="text-green-400 text-sm font-mono uppercase tracking-wider">
-                    developer.profile
-                  </div>
-                  <div className="text-white text-xs mt-1 opacity-60">
-                    Full Stack Engineer
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating Elements */}
-              <div className="absolute -top-4 -right-4 w-8 h-8 bg-green-400 opacity-20"></div>
-              <div className="absolute -bottom-4 -left-4 w-6 h-6 border-2 border-green-400 opacity-30"></div>
-              
-              {/* Side Decorative Lines */}
-              <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-8">
-                <div className="flex flex-col space-y-2">
-                  <div className="w-4 h-px bg-green-400 opacity-40"></div>
-                  <div className="w-6 h-px bg-green-400 opacity-60"></div>
-                  <div className="w-4 h-px bg-green-400 opacity-40"></div>
-                </div>
-              </div>
-            </div>
-
-          
-          </div>
-        </div>
+    <div className="min-h-screen bg-black text-white overflow-hidden relative">
+      {/* Animated Background Grid */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `linear-gradient(rgba(34, 197, 94, 0.2) 1px, transparent 1px),
+                           linear-gradient(90deg, rgba(34, 197, 94, 0.2) 1px, transparent 1px)`,
+          backgroundSize: '50px 50px',
+          animation: 'grid-move 20s linear infinite'
+        }}></div>
       </div>
 
       {/* Floating Code Elements */}
-      <div className="absolute inset-0 pointer-events-none z-5">
-        <div className="absolute top-1/4 left-10 text-green-400 opacity-30 font-mono text-sm">
-          {'{ React.js }'}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {['{', '}', '<', '>', '/', '*', '=', ';'].map((symbol, i) => (
+          <div
+            key={i}
+            className="absolute text-green-400/20 font-mono text-2xl"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `float ${4 + Math.random() * 4}s ease-in-out infinite`,
+              animationDelay: `${Math.random() * 2}s`
+            }}
+          >
+            {symbol}
+          </div>
+        ))}
+      </div>
+
+      {/* Mouse Follower */}
+      <div 
+        className="fixed w-6 h-6 border-2 border-green-400 pointer-events-none z-50 mix-blend-difference transition-all duration-200 opacity-50"
+        style={{
+          left: mousePosition.x - 12,
+          top: mousePosition.y - 12,
+          transform: `scale(${mousePosition.x > 0 ? 1 : 0})`
+        }}
+      />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
+        <div className="min-h-screen flex items-center">
+          <div className="grid lg:grid-cols-2 gap-12 w-full items-center">
+            
+            {/* Left Content */}
+            <div className="space-y-8">
+              {/* Status Badge */}
+              <div className={`transform transition-all duration-1000 ${
+                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+              }`}>
+                <div className="inline-flex items-center space-x-2 bg-green-400/10 border border-green-400/30 px-4 py-2">
+                  <Activity className="w-4 h-4 text-green-400 animate-pulse" />
+                  <span className="text-green-400 text-sm font-mono">Available for projects</span>
+                </div>
+              </div>
+
+              {/* Main Heading */}
+              <div className={`transform transition-all duration-1000 delay-200 ${
+                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+              }`}>
+                <div className="space-y-4">
+                  <div className="text-green-400/70 text-sm font-mono tracking-wider">
+                    // Hello World, I'm
+                  </div>
+                  
+                  <h1 className="text-5xl md:text-7xl font-black font-bold tracking-tight leading-tight">
+                    <span className="text-white">IMAD KHAN</span>
+                    <br />
+                    <span className="text-green-400 font-mono">
+                      {typedText}
+                      <span className="animate-pulse">|</span>
+                    </span>
+                  </h1>
+                  
+                  <div className="text-xl text-gray-400 font-light">
+                    Building exceptional digital experiences with modern technology
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className={`transform transition-all duration-1000 delay-400 ${
+                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+              }`}>
+                <div className="border-l-4 border-green-400/50 pl-6">
+                  <p className="text-lg text-gray-300 leading-relaxed">
+                    Specialized in crafting scalable web applications using the MERN stack. 
+                    I transform complex problems into elegant, user-centric solutions that 
+                    drive real business value.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tech Stack Pills */}
+              <div className={`transform transition-all duration-1000 delay-500 ${
+                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+              }`}>
+                <div className="flex flex-wrap gap-3">
+                  {['React', 'Node.js', 'MongoDB', 'Express', 'NextJs', 'React Native'].map((tech, index) => (
+                    <div
+                      key={tech}
+                      className="bg-gray-900 border border-gray-700 px-4 py-2 text-sm font-mono hover:border-green-400/50 hover:bg-green-400/5 transition-all duration-300 cursor-pointer"
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      {tech}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            {/* CTA Buttons */}
+<div className={`transform transition-all duration-1000 delay-700 ${
+  isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+}`}>
+  <div className="flex flex-col sm:flex-row gap-4">
+    {/* View My Work Button */}
+    <a
+      href="/projects" // Link to your portfolio or work page
+      className="group bg-green-400 text-black px-8 py-4 font-bold hover:bg-green-300 transition-all duration-300 flex items-center justify-center space-x-2 hover:scale-105"
+    >
+      <span>View My Work</span>
+      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+    </a>
+
+    {/* Download CV Button */}
+    <a
+      href="/https://drive.google.com/file/d/1S6UJ78o841HlqPXEnTkHxAm3UU1FVAV0/view?usp=drive_link" // Path to your CV file in public folder
+      download // Ensures file is downloaded
+      className="group border-2 border-green-400 text-green-400 px-8 py-4 font-bold hover:bg-green-400 hover:text-black transition-all duration-300 flex items-center justify-center space-x-2"
+    >
+      <Download className="w-5 h-5" />
+      <span>Download CV</span>
+    </a>
+  </div>
+</div>
+
+              {/* Social Links */}
+              <div className={`transform transition-all duration-1000 delay-900 ${
+                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+              }`}>
+                <div className="flex items-center space-x-6">
+                  <span className="text-gray-500 text-sm font-mono">Connect:</span>
+                  <div className="flex space-x-4">
+                    {[
+                      { icon: Github, href: 'https://github.com/ImaadDev' },
+                      { icon: Linkedin, href: 'https://www.linkedin.com/in/imad-hussain-khan-76388b305' },
+                      { icon: Mail, href: 'kimad1728@gmail.com' }
+                    ].map((social, index) => {
+                      const Icon = social.icon;
+                      return (
+                        <a
+                          key={index}
+                          href={social.href}
+                          className="w-10 h-10 border border-gray-700 flex items-center justify-center hover:border-green-400 hover:bg-green-400/10 transition-all duration-300 group"
+                        >
+                          <Icon className="w-5 h-5 text-gray-400 group-hover:text-green-400 transition-colors" />
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Image Only */}
+            <div className={`transform transition-all duration-1000 delay-600 ${
+              isLoaded ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0'
+            }`}>
+              <div className="relative">
+                {/* Glow Effect */}
+                <div className="absolute -inset-6 bg-gradient-to-br from-green-400/20 via-blue-500/15 to-purple-500/20 blur-3xl opacity-40"></div>
+                
+                {/* Main Image Container */}
+                <div className="relative bg-gray-900 border-2 border-gray-700 overflow-hidden">
+                  {/* Developer Image */}
+                  <div className="relative">
+                    {isLoading ? (
+                      <div className="w-full h-[500px] md:h-[600px] bg-gray-800 flex items-center justify-center">
+                        <div className="animate-spin w-12 h-12 border-2 border-green-400 border-t-transparent rounded-full"></div>
+                      </div>
+                    ) : error ? (
+                      <div className="w-full h-[500px] md:h-[600px] bg-gray-800 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-red-400 text-lg mb-2">Failed to load image</div>
+                          <div className="text-gray-400 text-sm">{error}</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <img 
+                        src={aboutImageUrl || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=700&fit=crop&crop=face"} 
+                        alt="Developer" 
+                        className="w-full h-[500px] md:h-[600px] object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                        onError={(e) => {
+                          e.target.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=700&fit=crop&crop=face";
+                        }}
+                      />
+                    )}
+                    
+                    {/* Overlay Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+                    
+                    {/* Code Overlay Elements */}
+                    <div className="absolute top-6 left-6 right-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-3 h-3 bg-red-500"></div>
+                          <div className="w-3 h-3 bg-yellow-500"></div>
+                          <div className="w-3 h-3 bg-green-500"></div>
+                        </div>
+                        <div className="flex items-center space-x-2 bg-black/50 px-3 py-1 backdrop-blur-sm">
+                          <Terminal className="w-4 h-4 text-green-400" />
+                          <span className="text-green-400 text-xs font-mono">ACTIVE</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Info */}
+                    <div className="absolute bottom-6 left-6 right-6">
+                      <div className="space-y-4">
+                        {/* Personal Info */}
+                        <div>
+                          <div className="text-white font-bold text-2xl mb-1">Imad Hussain Khan</div>
+                          <div className="text-green-400 text-lg font-mono mb-3">Full Stack Engineer</div>
+                          <div className="text-gray-300 text-sm leading-relaxed">
+                            Passionate about creating innovative digital solutions and turning ideas into reality.
+                          </div>
+                        </div>
+
+                        {/* Stats Row */}
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="bg-black/50 backdrop-blur-sm border border-gray-700 p-3 text-center">
+                            <div className="text-green-400 text-xl font-bold">5+</div>
+                            <div className="text-gray-400 text-xs uppercase tracking-wider">Years</div>
+                          </div>
+                          <div className="bg-black/50 backdrop-blur-sm border border-gray-700 p-3 text-center">
+                            <div className="text-green-400 text-xl font-bold">50+</div>
+                            <div className="text-gray-400 text-xs uppercase tracking-wider">Projects</div>
+                          </div>
+                          <div className="bg-black/50 backdrop-blur-sm border border-gray-700 p-3 text-center">
+                            <div className="text-green-400 text-xl font-bold">99%</div>
+                            <div className="text-gray-400 text-xs uppercase tracking-wider">Success</div>
+                          </div>
+                        </div>
+
+                        {/* Status Indicator */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Activity className="w-4 h-4 text-green-400 animate-pulse" />
+                          </div>
+                          <div className="bg-green-400/20 border border-green-400/50 px-3 py-1">
+                            <span className="text-green-400 text-xs font-mono">AVAILABLE</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Floating Tech Icons */}
+                    <div className="absolute inset-0 pointer-events-none">
+                      <div className="absolute top-20 right-8 bg-black/60 backdrop-blur-sm border border-green-400/30 p-2">
+                        <Code className="w-5 h-5 text-green-400" />
+                      </div>
+                      <div className="absolute top-32 right-16 bg-black/60 backdrop-blur-sm border border-blue-400/30 p-2">
+                        <Terminal className="w-5 h-5 text-blue-400" />
+                      </div>
+                      <div className="absolute top-44 right-6 bg-black/60 backdrop-blur-sm border border-purple-400/30 p-2">
+                        <Zap className="w-5 h-5 text-purple-400" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Side Accent Lines */}
+                <div className="absolute -left-2 top-12 bottom-12 w-1 bg-gradient-to-b from-transparent via-green-400 to-transparent opacity-60"></div>
+                <div className="absolute -right-2 top-20 bottom-20 w-1 bg-gradient-to-b from-transparent via-blue-400 to-transparent opacity-60"></div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="absolute top-1/3 right-20 text-white opacity-20 font-mono text-xs">
-          &lt;/NextJS&gt;
-        </div>
-        <div className="absolute bottom-1/4 left-1/4 text-green-400 opacity-25 font-mono text-sm">
-          MongoDB()
-        </div>
-        <div className="absolute bottom-1/3 right-1/3 text-white opacity-20 font-mono text-xs">
-          Node.js
+
+        {/* Scroll Indicator */}
+        <div className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 transition-all duration-1000 delay-1000 ${
+          isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+        }`}>
+          <div className="flex flex-col items-center space-y-2 animate-bounce">
+            <span className="text-gray-500 text-sm font-mono">Scroll to explore</span>
+            <ChevronDown className="w-5 h-5 text-green-400" />
+          </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes grid-move {
+          0% { transform: translate(0, 0); }
+          100% { transform: translate(50px, 50px); }
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        @keyframes pulse-glow {
+          0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+          50% { box-shadow: 0 0 40px rgba(34, 197, 94, 0.6); }
+        }
+      `}</style>
     </div>
   );
 };
 
-export default Hero3D;
+export default ModernHeroSection;
