@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
-    const BackendUrl = 'http://localhost:5000';
+    const BackendUrl = import.meta.env.VITE_BACKEND_URL;
 
     // Ensure axios sends cookies with requests
     axios.defaults.withCredentials = true;
