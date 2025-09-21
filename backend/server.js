@@ -11,6 +11,7 @@ import projectRoutes from './routes/projectRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import technologyRoutes from './routes/technologyRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import contactRoutes from './routes/contactRoutes.js'
 
 dotenv.config();
 connectDB();
@@ -45,6 +46,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/technologies', technologyRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/contact', contactRoutes);
 
 
 const PORT = process.env.PORT || 5000;

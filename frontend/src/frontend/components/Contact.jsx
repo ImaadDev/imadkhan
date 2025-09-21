@@ -1,7 +1,41 @@
-import React from 'react';
+import React, { useState, useContext } from 'react';
 import { Send, Terminal, Link } from 'lucide-react';
+import axios from 'axios';
+import AuthContext from '../context/AuthContext';
 
 const Contact = ({ isVisible, contactRef }) => {
+  const { BackendUrl } = useContext(AuthContext);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '', // Subject field is now part of the state
+    message: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [responseMessage, setResponseMessage] = useState({ text: '', type: '' });
+
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setResponseMessage({ text: '', type: '' });
+
+    try {
+      const response = await axios.post(`${BackendUrl}/api/contact/send-email`, formData);
+      setResponseMessage({ text: response.data.message, type: 'success' });
+      setFormData({ name: '', email: '', subject: '', message: '' }); // Clear form
+    } catch (error) {
+      setResponseMessage({ text: error.response?.data?.message || 'Failed to send message.', type: 'error' });
+      console.error('Error sending message:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <section
       id="contact"
@@ -91,10 +125,19 @@ const Contact = ({ isVisible, contactRef }) => {
             {/* Right Column - Contact Form as Terminal Input */}
             <div className="relative">
               <div className="bg-gray-900 border-2 border-green-400/20 p-8 relative overflow-hidden">
-                <form className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <h4 className="text-green-400 font-mono mb-4 text-lg">
                     {'>'} <span className="text-white">send_message.exec()</span>
                   </h4>
+
+                  {/* Response Message */}
+                  {responseMessage.text && (
+                    <div className={`p-3 rounded text-sm font-mono ${
+                      responseMessage.type === 'success' ? 'bg-green-600/20 text-green-300 border border-green-400' : 'bg-red-600/20 text-red-300 border border-red-400'
+                    }`}>
+                      {responseMessage.text}
+                    </div>
+                  )}
 
                   {/* Name Input */}
                   <div className="flex items-center font-mono">
@@ -102,8 +145,12 @@ const Contact = ({ isVisible, contactRef }) => {
                     <input
                       type="text"
                       id="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
                       className="w-full p-2 bg-transparent text-gray-300 border-b border-green-400/50 focus:border-green-400 focus:outline-none"
                       placeholder="Enter your name..."
+                      required
+                      disabled={isSubmitting}
                     />
                   </div>
 
@@ -113,8 +160,27 @@ const Contact = ({ isVisible, contactRef }) => {
                     <input
                       type="email"
                       id="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
                       className="w-full p-2 bg-transparent text-gray-300 border-b border-green-400/50 focus:border-green-400 focus:outline-none"
                       placeholder="Enter your email..."
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  {/* Subject Input */}
+                  <div className="flex items-center font-mono">
+                    <span className="text-green-400 mr-2">subject:</span>
+                    <input
+                      type="text"
+                      id="subject"
+                      value={formData.subject}
+                      onChange={handleInputChange}
+                      className="w-full p-2 bg-transparent text-gray-300 border-b border-green-400/50 focus:border-green-400 focus:outline-none"
+                      placeholder="Enter the subject..."
+                      required
+                      disabled={isSubmitting}
                     />
                   </div>
 
@@ -124,8 +190,12 @@ const Contact = ({ isVisible, contactRef }) => {
                     <textarea
                       id="message"
                       rows="5"
+                      value={formData.message}
+                      onChange={handleInputChange}
                       className="w-full p-2 bg-gray-800 text-gray-300 border border-green-400/30 focus:border-green-400 focus:outline-none"
                       placeholder="Type your message here..."
+                      required
+                      disabled={isSubmitting}
                     ></textarea>
                   </div>
 
@@ -133,8 +203,9 @@ const Contact = ({ isVisible, contactRef }) => {
                   <button
                     type="submit"
                     className="group px-6 py-2 bg-green-400 text-black hover:bg-green-300 transition-all duration-300 transform hover:scale-105 tracking-wider font-semibold flex items-center justify-center text-sm"
+                    disabled={isSubmitting}
                   >
-                    SEND <Send className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                    {isSubmitting ? 'SENDING...' : 'SEND'} <Send className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </button>
                 </form>
               </div>

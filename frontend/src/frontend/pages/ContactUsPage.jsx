@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
   Sparkles, 
   ArrowRight, 
@@ -11,8 +11,11 @@ import {
   Github,
   Award
 } from 'lucide-react';
+import axios from 'axios'; // Import axios
+import AuthContext from '../context/AuthContext'; // Import AuthContext
 
-const Contact = () => {
+const ContactUsPage = () => {
+  const { BackendUrl } = useContext(AuthContext);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hoveredElement, setHoveredElement] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -22,6 +25,8 @@ const Contact = () => {
     subject: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [responseMessage, setResponseMessage] = useState({ text: '', type: '' });
 
   useEffect(() => {
     setIsLoaded(true);
@@ -39,12 +44,21 @@ const Contact = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form data submitted:', formData);
-    // Here you would typically send the data to a backend API
-    alert("Message sent! (This is a demo, check the console for the form data.)");
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    setIsSubmitting(true);
+    setResponseMessage({ text: '', type: '' });
+
+    try {
+      const response = await axios.post(`${BackendUrl}/api/contact/send-email`, formData);
+      setResponseMessage({ text: response.data.message, type: 'success' });
+      setFormData({ name: '', email: '', subject: '', message: '' }); // Clear form
+    } catch (error) {
+      setResponseMessage({ text: error.response?.data?.message || 'Failed to send message.', type: 'error' });
+      console.error('Error sending message:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactInfo = [
@@ -186,6 +200,13 @@ const Contact = () => {
           <div className="bg-gray-900/50 border-2 border-gray-700 p-8">
             <h2 className="text-2xl font-bold mb-6 text-white">SEND_A_MESSAGE</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {responseMessage.text && (
+                <div className={`p-3 rounded text-sm font-mono ${
+                  responseMessage.type === 'success' ? 'bg-green-600/20 text-green-300 border border-green-400' : 'bg-red-600/20 text-red-300 border border-red-400'
+                }`}>
+                  {responseMessage.text}
+                </div>
+              )}
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-400 mb-2">FULL NAME</label>
                 <input 
@@ -196,6 +217,7 @@ const Contact = () => {
                   onChange={handleChange} 
                   required 
                   className="w-full px-4 py-2 bg-gray-800 border-2 border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-green-400"
+                  disabled={isSubmitting}
                 />
               </div>
               
@@ -209,6 +231,7 @@ const Contact = () => {
                   onChange={handleChange} 
                   required 
                   className="w-full px-4 py-2 bg-gray-800 border-2 border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-green-400"
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -222,6 +245,7 @@ const Contact = () => {
                   onChange={handleChange} 
                   required 
                   className="w-full px-4 py-2 bg-gray-800 border-2 border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-green-400"
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -235,15 +259,16 @@ const Contact = () => {
                   rows="5"
                   required 
                   className="w-full px-4 py-2 bg-gray-800 border-2 border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-green-400"
+                  disabled={isSubmitting}
                 ></textarea>
               </div>
 
               <button 
                 type="submit" 
                 className="w-full bg-green-400 text-black px-8 py-3 font-bold hover:bg-green-300 transition-colors duration-300 flex items-center justify-center space-x-2"
+                disabled={isSubmitting}
               >
-                <span>SEND MESSAGE</span>
-                <Send className="w-5 h-5" />
+                {isSubmitting ? 'SENDING...' : 'SEND MESSAGE'} <Send className="w-5 h-5" />
               </button>
             </form>
           </div>
@@ -273,4 +298,4 @@ const Contact = () => {
   );
 };
 
-export default Contact;
+export default ContactUsPage;
