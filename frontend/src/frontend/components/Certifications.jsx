@@ -25,7 +25,7 @@ const Certifications = ({ isVisible, certificationsRef }) => {
     <section
       id="certifications"
       ref={certificationsRef}
-      className="py-20 bg-black relative z-10"
+      className="py-20 relative z-10"
     >
       <div className="max-w-4xl mx-auto px-6">
         {/* Subtle Grid Background */}

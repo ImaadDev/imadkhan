@@ -53,7 +53,7 @@ const Home = () => {
   };
 
   return (
-    <div className="relative z-10 bg-black min-h-screen text-green-400 font-mono">
+    <div className="relative z-10 min-h-screen text-green-400 font-mono">
       
 
       {/* Hero section is a separate component */}

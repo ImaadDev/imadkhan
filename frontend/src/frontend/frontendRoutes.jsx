@@ -21,7 +21,7 @@ const FrontendRoutes = () => {
             {!hideLayout && <Navbar />}
 
             {/* Main content */}
-            <div className='mt-15'>
+            <div className='mt-15 p-4 md:p-8'>
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/certifications" element={<CertificationsPage />} />

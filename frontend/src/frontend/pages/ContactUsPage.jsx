@@ -12,7 +12,7 @@ import {
   Award
 } from 'lucide-react';
 
-const App = () => {
+const Contact = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hoveredElement, setHoveredElement] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -48,9 +48,9 @@ const App = () => {
   };
 
   const contactInfo = [
-    { icon: Mail, label: 'Email', value: 'contact@example.com' },
-    { icon: Phone, label: 'Phone', value: '+1 (555) 123-4567' },
-    { icon: MapPin, label: 'Location', value: 'San Francisco, CA' },
+    { icon: Mail, label: 'Email', value: 'kimad1728@gmail.com' },
+    { icon: Phone, label: 'Phone', value: '+966573672733' },
+    { icon: MapPin, label: 'Location', value: 'Al Olaya, Riyadh, Saudi Arabia' },
   ];
 
   return (
@@ -163,10 +163,10 @@ const App = () => {
               </div>
               
               <div className="mt-8 flex space-x-4">
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 transition-colors">
+                <a href="https://github.com/ImaadDev" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 transition-colors">
                   <Github className="w-8 h-8" />
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 transition-colors">
+                <a href="https://www.linkedin.com/in/imad-hussain-khan-76388b305" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 transition-colors">
                   <span className="sr-only">LinkedIn</span>
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
@@ -273,4 +273,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Contact;
