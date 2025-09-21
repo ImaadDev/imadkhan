@@ -182,13 +182,15 @@ const ModernHeroSection = () => {
 
     {/* Download CV Button */}
     <a
-      href="/https://drive.google.com/file/d/1S6UJ78o841HlqPXEnTkHxAm3UU1FVAV0/view?usp=drive_link" // Path to your CV file in public folder
-      download // Ensures file is downloaded
-      className="group border-2 border-green-400 text-green-400 px-8 py-4 font-bold hover:bg-green-400 hover:text-black transition-all duration-300 flex items-center justify-center space-x-2"
-    >
-      <Download className="w-5 h-5" />
-      <span>Download CV</span>
-    </a>
+  href="https://drive.google.com/file/d/1S6UJ78o841HlqPXEnTkHxAm3UU1FVAV0/view?usp=drive_link"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="group border-2 border-green-400 text-green-400 px-8 py-4 font-bold hover:bg-green-400 hover:text-black transition-all duration-300 flex items-center justify-center space-x-2"
+>
+  <Download className="w-5 h-5" />
+  <span>Download CV</span>
+</a>
+
   </div>
 </div>
 
