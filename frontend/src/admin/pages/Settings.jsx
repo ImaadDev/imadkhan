@@ -25,7 +25,8 @@ const SettingsPage = () => {
     username: user?.username || '',
     email: user?.email || '',
     bio: user?.bio || '',
-    aboutImageUrl: user?.imageUrl || '' // Use user.imageUrl
+    aboutImageUrl: user?.imageUrl || '',
+    featured: false, // Adding a default for featured, though it might not be used here directly
   });
 
   // Page load and mouse follower
@@ -94,7 +95,8 @@ const SettingsPage = () => {
 
   // Handle form input changes
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const handleFileChange = (e) => {
@@ -338,6 +340,20 @@ const SettingsPage = () => {
                 {formData.aboutImageUrl && !selectedFile && (
                   <p className="text-gray-500 text-xs mt-2">Current image: <a href={formData.aboutImageUrl} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:underline">View Image</a></p>
                 )}
+              </div>
+              <div className="mb-4">
+                <label className="flex items-center gap-2 text-green-400 text-xs sm:text-sm font-bold mb-2">
+                  Featured Review (if applicable)
+                </label>
+                <input
+                  type="checkbox"
+                  name="featured"
+                  checked={formData.featured}
+                  onChange={handleInputChange}
+                  className="w-4 h-4 text-green-400 focus:ring-green-400 border-gray-700 rounded"
+                  disabled={isLoading}
+                />
+                <span className="text-gray-400 text-xs ml-2">Show a featured review on the homepage.</span>
               </div>
               <button
                 type="submit"

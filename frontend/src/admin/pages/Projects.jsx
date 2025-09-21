@@ -24,18 +24,21 @@ const ProjectsPage = () => {
     projectUrl: '',
     githubUrl: '',
     tags: '',
-    category: ''
+    category: 'all' // Default category to 'all'
   });
 
   const categories = [
     { id: 'all', name: 'ALL PROJECTS', icon: Layers },
-    { id: 'web', name: 'WEB', icon: Code },
-    { id: 'mobile', name: 'MOBILE', icon: Smartphone },
-    { id: 'ai', name: 'AI', icon: Brain }
+    { id: 'fullstack', name: 'FULLSTACK', icon: Code },
+    { id: 'frontend', name: 'FRONTEND', icon: Terminal },
+    { id: 'backend', name: 'BACKEND', icon: GitBranch },
+    { id: 'mobile', name: 'MOBILE APP', icon: Smartphone },
+    { id: 'ecommerce', name: 'ECOMMERCE STORE', icon: Layers },
+    { id: 'ai', name: 'AI & ML', icon: Brain },
   ];
 
   const filteredProjects = projects.filter(project => {
-    const matchesCategory = selectedCategory === 'all' || project.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || project.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          project.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesCategory && matchesSearch;
@@ -168,9 +171,9 @@ const ProjectsPage = () => {
         projectUrl: project.projectUrl || '',
         githubUrl: project.githubUrl || '',
         tags: project.tags.join(', '),
-        category: project.category || ''
+        category: project.category || 'all'
       } : {
-        title: '', description: '', imageUrl: '', projectUrl: '', githubUrl: '', tags: '', category: ''
+        title: '', description: '', imageUrl: '', projectUrl: '', githubUrl: '', tags: '', category: 'all'
       });
     }
     setSelectedFile(null); // Reset selected file on modal open
@@ -180,7 +183,7 @@ const ProjectsPage = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setCurrentProject(null);
-    setFormData({ title: '', description: '', imageUrl: '', projectUrl: '', githubUrl: '', tags: '', category: '' });
+    setFormData({ title: '', description: '', imageUrl: '', projectUrl: '', githubUrl: '', tags: '', category: 'all' });
   };
 
   const handleFileChange = (e) => {
@@ -193,8 +196,8 @@ const ProjectsPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.description) {
-      showAlert('[ERROR]', 'Missing required fields: Title and Description are required.', 'error');
+    if (!formData.title || !formData.description || !formData.category) {
+      showAlert('[ERROR]', 'Missing required fields: Title, Description, and Category are required.', 'error');
       return;
     }
 
@@ -205,7 +208,7 @@ const ProjectsPage = () => {
     formDataToSend.append('description', formData.description);
     formDataToSend.append('projectUrl', formData.projectUrl);
     formDataToSend.append('githubUrl', formData.githubUrl);
-    formDataToSend.append('tags', JSON.stringify(tagsArray)); // Send tags as JSON string
+    formDataToSend.append('tags', tagsArray); // Send tags as an array
     formDataToSend.append('category', formData.category);
 
     if (selectedFile) {
@@ -241,7 +244,7 @@ const ProjectsPage = () => {
     if (currentProject) {
       setIsLoading(true);
       try {
-        await axios.delete(`${BackendUrl}/projects/${currentProject._id}`);
+        await axios.delete(`${BackendUrl}/api/projects/${currentProject._id}`);
         setProjects(prev => prev.filter(project => project._id !== currentProject._id));
         showAlert('[DELETE]', 'Project removed successfully.', 'error');
         closeModal();
@@ -485,7 +488,7 @@ const ProjectsPage = () => {
                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-300"></div>
                     <div className="absolute top-1 sm:top-2 right-1 sm:right-2 flex space-x-1">
                       <div className="px-1 py-0.5 text-xs border-2 border-green-400 text-green-400 bg-black/50">
-                        {project.category ? project.category.toUpperCase() : 'UNCATEGORIZED'}
+                        {project.category ? project.category.toUpperCase() : 'ALL'}
                       </div>
                     </div>
                     {project.imageUrl ? (
@@ -498,12 +501,12 @@ const ProjectsPage = () => {
                     <h3 className="font-bold text-white mb-2 text-sm sm:text-base group-hover:text-green-400 transition-colors">{project.title}</h3>
                     <p className="text-gray-400 text-xs sm:text-sm mb-3 line-clamp-2">{project.description}</p>
                     <div className="flex flex-wrap gap-1 mb-3">
-                      {project.tags.slice(0, window.innerWidth < 640 ? 2 : 3).map((tag) => (
+                      {Array.isArray(project.tags) && project.tags.slice(0, window.innerWidth < 640 ? 2 : 3).map((tag) => (
                         <span key={tag} className="px-1 sm:px-1.5 py-0.5 bg-gray-800 text-green-400 text-xs font-mono">
                           {tag}
                         </span>
                       ))}
-                      {project.tags.length > (window.innerWidth < 640 ? 2 : 3) && (
+                      {Array.isArray(project.tags) && project.tags.length > (window.innerWidth < 640 ? 2 : 3) && (
                         <span className="px-1 sm:px-1.5 py-0.5 bg-gray-800 text-gray-400 text-xs">+{project.tags.length - (window.innerWidth < 640 ? 2 : 3)}</span>
                       )}
                     </div>
@@ -703,17 +706,21 @@ const ProjectsPage = () => {
                       </div>
                       <div>
                         <label className="flex items-center gap-2 text-green-400 text-xs sm:text-sm font-bold mb-2">
-                          <Layers size={12} /> Category
+                          <Layers size={12} /> Category [Required]
                         </label>
-                        <input
-                          type="text"
+                        <select
                           name="category"
                           value={formData.category}
                           onChange={handleInputChange}
                           className="w-full bg-gray-950/50 border-2 border-green-400/50 focus:border-green-400 text-white p-2 sm:p-3 outline-none transition-all placeholder-gray-400/30"
-                          placeholder="web, mobile, ai"
+                          required
                           disabled={isLoading}
-                        />
+                        >
+                          <option value="" disabled>Select a category</option>
+                          {categories.filter(cat => cat.id !== 'all').map(cat => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                   </div>

@@ -8,6 +8,10 @@ const TechnologySchema = mongoose.Schema({
     iconUrl: {
         type: String,
     },
+    featured: {
+        type: Boolean,
+        default: false,
+    },
     // Add more fields as per your Technologies.jsx component
 }, { timestamps: true });
 

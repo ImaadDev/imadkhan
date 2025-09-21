@@ -18,11 +18,14 @@ const ProjectSchema = mongoose.Schema({
     githubUrl: {
         type: String,
     },
-    tags: [
-        {
-            type: String,
-        },
-    ],
+    tags: {
+        type: [String],
+        default: [],
+    },
+    category: {
+        type: String,
+        required: true,
+    },
     // Add more fields as per your Projects.jsx and ProjectsPage.jsx components
 }, { timestamps: true });
 

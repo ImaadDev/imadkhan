@@ -1,32 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
-
-const reviewsData = [
-  {
-    id: 1,
-    author: 'Jane Doe',
-    title: 'Project Lead, Tech Solutions Inc.',
-    quote: "Working with [Your Name] was a game-changer. Their MERN stack expertise and attention to detail ensured our project was not only delivered on time but exceeded all performance expectations. A true full-stack professional.",
-    rating: 5,
-    date: '2023-11-20',
-  },
-  {
-    id: 2,
-    author: 'John Smith',
-    title: 'CTO, Innovate Labs',
-    quote: "They demonstrated an incredible ability to architect complex backend systems and integrate them seamlessly with a modern React frontend. Their code is clean, well-documented, and robust. Highly recommended!",
-    rating: 5,
-    date: '2023-09-15',
-  },
-  {
-    id: 3,
-    author: 'Emily White',
-    title: 'Founder, Startup Hub',
-    quote: "Beyond the technical skill, their communication and problem-solving abilities were exceptional. They're not just a coder; they're a partner who understands business goals and delivers solutions that drive value.",
-    rating: 4,
-    date: '2023-07-30',
-  },
-];
+import React, { useState, useEffect, useContext } from 'react';
+import { ChevronLeft, ChevronRight, Star, Loader2, Search } from 'lucide-react';
+import axios from 'axios';
+import AuthContext from '../context/AuthContext'; // Import AuthContext
 
 const Review = ({ review, isVisible }) => (
   <div
@@ -40,6 +15,9 @@ const Review = ({ review, isVisible }) => (
       <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
       <div className="w-3 h-3 rounded-full bg-green-400"></div>
       <span className="ml-4 text-green-400 text-sm hidden sm:inline">client@review:~$</span>
+      {review.featured && (
+        <Star className="w-4 h-4 text-yellow-400 fill-current ml-2" />
+      )}
     </div>
 
     {/* Code-like content */}
@@ -70,22 +48,55 @@ const Review = ({ review, isVisible }) => (
 );
 
 const Reviews = ({ isVisible, reviewsRef }) => {
+  const { BackendUrl } = useContext(AuthContext); // Use BackendUrl from AuthContext
+  const [reviews, setReviews] = useState([]); // State to hold fetched reviews
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
 
   const nextReview = () => {
-    setCurrentReviewIndex((prevIndex) => (prevIndex + 1) % reviewsData.length);
+    setCurrentReviewIndex((prevIndex) => (prevIndex + 1) % reviews.length);
   };
 
   const prevReview = () => {
-    setCurrentReviewIndex((prevIndex) => (prevIndex - 1 + reviewsData.length) % reviewsData.length);
+    setCurrentReviewIndex((prevIndex) => (prevIndex - 1 + reviews.length) % reviews.length);
   };
 
+  // Fetch reviews from backend
   useEffect(() => {
+    const fetchReviews = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await axios.get(`${BackendUrl}/api/reviews`);
+        setReviews(response.data.map(review => ({
+          id: review._id,
+          author: review.reviewerName,
+          title: 'Client Review', // Placeholder as title is not in model
+          quote: review.reviewContent,
+          rating: review.rating,
+          date: new Date(review.date).toLocaleDateString(),
+          featured: review.featured || false,
+        })));
+      } catch (err) {
+        setError('Failed to load reviews. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchReviews();
+  }, [BackendUrl]);
+
+  useEffect(() => {
+    if (reviews.length === 0) return; // Don't auto-rotate if no reviews
     const timer = setInterval(() => {
       nextReview();
     }, 8000); // Auto-rotate every 8 seconds
     return () => clearInterval(timer);
-  }, [currentReviewIndex]);
+  }, [currentReviewIndex, reviews]); // Add reviews to dependency array
+
+  const featuredReviews = reviews.filter(review => review.featured);
+  const reviewsToDisplay = featuredReviews.length > 0 ? featuredReviews : reviews; // Prioritize featured reviews
 
   return (
     <section
@@ -108,49 +119,70 @@ const Reviews = ({ isVisible, reviewsRef }) => {
             <div className="w-24 h-1 bg-green-400 mx-auto"></div>
           </div>
 
-          <div className="relative">
-            <div className="flex justify-center items-center">
-              {reviewsData.map((review, index) => (
-                <div
-                  key={review.id}
-                  className={`absolute w-full max-w-2xl transition-transform duration-500 ${
-                    index === currentReviewIndex
-                      ? 'scale-100 opacity-100 relative'
-                      : 'scale-90 opacity-0 pointer-events-none'
-                  }`}
-                >
-                  <Review review={review} isVisible={index === currentReviewIndex} />
-                </div>
-              ))}
+          {isLoading ? (
+            <div className="flex items-center justify-center min-h-[30vh]">
+              <div className="text-center">
+                <Loader2 className="w-12 h-12 text-green-400 mx-auto animate-spin" />
+                <p className="text-gray-400 mt-4">LOADING REVIEWS...</p>
+              </div>
             </div>
-
-            {/* Navigation Buttons */}
-            <button
-              onClick={prevReview}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 p-2 bg-gray-800/50 hover:bg-gray-700/70 text-white rounded-full transition-colors hidden md:block"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            <button
-              onClick={nextReview}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 p-2 bg-gray-800/50 hover:bg-gray-700/70 text-white rounded-full transition-colors hidden md:block"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-
-            {/* Pagination Dots */}
-            <div className="absolute bottom-[-4rem] left-1/2 transform -translate-x-1/2 flex space-x-2">
-              {reviewsData.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentReviewIndex(index)}
-                  className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                    index === currentReviewIndex ? 'bg-green-400' : 'bg-gray-600 hover:bg-green-400/50'
-                  }`}
-                />
-              ))}
+          ) : error ? (
+            <div className="text-center py-12 sm:py-16">
+              <Search className="w-12 sm:w-16 h-12 sm:h-16 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-lg sm:text-xl font-bold text-gray-400 mb-2">Error Loading Reviews</h3>
+              <p className="text-gray-500 text-sm sm:text-base">{error}</p>
             </div>
-          </div>
+          ) : reviewsToDisplay.length === 0 ? (
+            <div className="text-center py-12 sm:py-16">
+              <Search className="w-12 sm:w-16 h-12 sm:h-16 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-lg sm:text-xl font-bold text-gray-400 mb-2">No Reviews Found</h3>
+              <p className="text-gray-500 text-sm sm:text-base">Check back soon for testimonials!</p>
+            </div>
+          ) : (
+            <div className="relative">
+              <div className="flex justify-center items-center">
+                {reviewsToDisplay.map((review, index) => (
+                  <div
+                    key={review.id}
+                    className={`absolute w-full max-w-2xl transition-transform duration-500 ${
+                      index === currentReviewIndex
+                        ? 'scale-100 opacity-100 relative'
+                        : 'scale-90 opacity-0 pointer-events-none'
+                    }`}
+                  >
+                    <Review review={review} isVisible={index === currentReviewIndex} />
+                  </div>
+                ))}
+              </div>
+
+              {/* Navigation Buttons */}
+              <button
+                onClick={prevReview}
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 p-2 bg-gray-800/50 hover:bg-gray-700/70 text-white rounded-full transition-colors hidden md:block"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button
+                onClick={nextReview}
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 p-2 bg-gray-800/50 hover:bg-gray-700/70 text-white rounded-full transition-colors hidden md:block"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+
+              {/* Pagination Dots */}
+              <div className="absolute bottom-[-4rem] left-1/2 transform -translate-x-1/2 flex space-x-2">
+                {reviewsToDisplay.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentReviewIndex(index)}
+                    className={`w-3 h-3 rounded-full transition-colors duration-300 ${
+                      index === currentReviewIndex ? 'bg-green-400' : 'bg-gray-600 hover:bg-green-400/50'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

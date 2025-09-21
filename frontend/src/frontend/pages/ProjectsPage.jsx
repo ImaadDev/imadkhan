@@ -6,20 +6,13 @@ import {
   Database, 
   Server, 
   Monitor, 
-  Globe, 
   Layers,
   ArrowRight,
   Star,
   GitBranch,
-  Users,
-  Calendar,
-  Zap,
-  Filter,
-  Search,
-  Play,
-  Eye,
   Award,
-  Loader2
+  Loader2,
+  Image as ImageIcon
 } from 'lucide-react';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext.jsx';
@@ -28,9 +21,9 @@ const ModernProjectsPage = () => {
   const { BackendUrl } = useContext(AuthContext);
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [projects, setProjects] = useState([]); // State for fetched projects
-  const [isLoading, setIsLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
+  const [projects, setProjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [hoveredProject, setHoveredProject] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [searchTerm, setSearchTerm] = useState('');
@@ -46,7 +39,6 @@ const ModernProjectsPage = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Fetch projects from backend
   useEffect(() => {
     const fetchProjects = async () => {
       setIsLoading(true);
@@ -58,14 +50,14 @@ const ModernProjectsPage = () => {
           title: project.title,
           category: project.category,
           description: project.description,
-          longDescription: project.description, // Assuming longDescription is same as description for now
-          tech: project.tags, // Assuming tags are tech stack
-          image: project.imageUrl || '/api/placeholder/600/400',
+          longDescription: project.description,
+          tech: project.tags,
+          image: project.imageUrl, // Use imageUrl directly
           github: project.githubUrl,
           live: project.projectUrl,
-          status: "completed", // Assuming all projects are completed for now
-          featured: false, // Need a field in backend for this if desired
-          stats: { stars: 0, forks: 0, commits: 0 } // No stats in backend currently
+          status: "completed",
+          featured: false,
+          stats: { stars: 0, forks: 0, commits: 0 }
         })));
       } catch (err) {
         setError('Failed to load projects. Please try again.');
@@ -80,13 +72,16 @@ const ModernProjectsPage = () => {
     { id: 'all', name: 'ALL PROJECTS', icon: Layers },
     { id: 'fullstack', name: 'FULL STACK', icon: Code },
     { id: 'frontend', name: 'FRONTEND', icon: Monitor },
-    { id: 'backend', name: 'BACKEND', icon: Server }
+    { id: 'backend', name: 'BACKEND', icon: Server },
+    { id: 'mobile', name: 'MOBILE APP', icon: Award },
+    { id: 'ecommerce', name: 'ECOMMERCE STORE', icon: ImageIcon },
+    { id: 'ai', name: 'AI & ML', icon: Database }
   ];
 
   const filteredProjects = projects.filter(project => {
-    const matchesCategory = selectedCategory === 'all' || project.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || project.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.tech.some(tech => tech.toLowerCase().includes(searchTerm.toLowerCase()));
+                          (Array.isArray(project.tech) && project.tech.some(tech => tech.toLowerCase().includes(searchTerm.toLowerCase())));
     return matchesCategory && matchesSearch;
   });
 
@@ -172,7 +167,7 @@ const ModernProjectsPage = () => {
           </div>
         ) : error ? (
           <div className="text-center py-12 sm:py-16">
-            <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+            <ImageIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-400 mb-2">Error Loading Projects</h3>
             <p className="text-gray-500">{error}</p>
           </div>
@@ -240,7 +235,7 @@ const ModernProjectsPage = () => {
 
                 {/* Search */}
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <ImageIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search projects or technologies..."
@@ -264,7 +259,7 @@ const ModernProjectsPage = () => {
                 </div>
                 
                 <div className="grid lg:grid-cols-2 gap-8">
-                  {featuredProjects.slice(0, 2).map((project, index) => (
+                  {featuredProjects.slice(0, 2).map((project) => (
                     <div
                       key={project.id}
                       className="bg-gray-900/50 border-2 border-gray-700 overflow-hidden group cursor-pointer transition-all duration-500 hover:border-green-400/50"
@@ -272,15 +267,28 @@ const ModernProjectsPage = () => {
                       onMouseLeave={() => setHoveredProject(null)}
                     >
                       {/* Project Image */}
-                      <div className="h-48 bg-gradient-to-br from-gray-800 to-gray-900 relative overflow-hidden">
+                      <div className="h-48 relative overflow-hidden">
+                        {project.image ? (
+                          <img
+                            src={project.image}
+                            alt={`${project.title} preview`}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-gray-600">
+                            <ImageIcon className="w-16 h-16 opacity-30" />
+                          </div>
+                        )}
                         <div className="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-all duration-300"></div>
                         <div className="absolute top-4 right-4 flex space-x-2">
                           <div className={`px-2 py-1 text-xs border ${getStatusColor(project.status)} bg-black/50`}>
                             {project.status.toUpperCase()}
                           </div>
-                        </div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Play className="w-16 h-16 text-green-400/30 group-hover:text-green-400/60 transition-colors" />
+                          {project.category && (
+                            <div className="px-2 py-1 text-xs border border-green-400 text-green-400 bg-black/50">
+                              {project.category.toUpperCase()}
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -293,7 +301,7 @@ const ModernProjectsPage = () => {
                         
                         {/* Tech Stack */}
                         <div className="flex flex-wrap gap-2 mb-4">
-                          {project.tech.map((tech) => (
+                          {Array.isArray(project.tech) && project.tech.map((tech) => (
                             <span
                               key={tech}
                               className="px-2 py-1 bg-gray-800 text-green-400 text-xs font-mono border border-gray-600"
@@ -317,10 +325,14 @@ const ModernProjectsPage = () => {
                           </div>
                           <div className="flex space-x-2">
                             {project.github && (
-                              <Github className="w-5 h-5 hover:text-green-400 transition-colors cursor-pointer" />
+                              <a href={project.github} target="_blank" rel="noopener noreferrer">
+                                <Github className="w-5 h-5 hover:text-green-400 transition-colors cursor-pointer" />
+                              </a>
                             )}
                             {project.live && (
-                              <ExternalLink className="w-5 h-5 hover:text-green-400 transition-colors cursor-pointer" />
+                              <a href={project.live} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="w-5 h-5 hover:text-green-400 transition-colors cursor-pointer" />
+                              </a>
                             )}
                           </div>
                         </div>
@@ -354,7 +366,18 @@ const ModernProjectsPage = () => {
                     onMouseLeave={() => setHoveredProject(null)}
                   >
                     {/* Project Preview */}
-                    <div className="h-32 bg-gradient-to-br from-gray-800 to-gray-900 relative overflow-hidden">
+                    <div className="h-48 relative overflow-hidden">
+                      {project.image ? (
+                        <img
+                          src={project.image}
+                          alt={`${project.title} preview`}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-gray-600">
+                          <ImageIcon className="w-16 h-16 opacity-30" />
+                        </div>
+                      )}
                       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-300"></div>
                       <div className="absolute top-2 right-2 flex space-x-1">
                         {project.featured && (
@@ -363,9 +386,11 @@ const ModernProjectsPage = () => {
                         <div className={`px-1 py-0.5 text-xs border ${getStatusColor(project.status)} bg-black/50`}>
                           {project.status === 'completed' ? 'LIVE' : project.status.toUpperCase()}
                         </div>
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Eye className="w-8 h-8 text-green-400/40 group-hover:text-green-400/70 transition-colors" />
+                        {project.category && (
+                          <div className="px-1 py-0.5 text-xs border border-green-400 text-green-400 bg-black/50">
+                            {project.category.toUpperCase()}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -378,7 +403,7 @@ const ModernProjectsPage = () => {
                       
                       {/* Tech Tags */}
                       <div className="flex flex-wrap gap-1 mb-3">
-                        {project.tech.slice(0, 3).map((tech) => (
+                        {Array.isArray(project.tech) && project.tech.slice(0, 3).map((tech) => (
                           <span
                             key={tech}
                             className="px-1.5 py-0.5 bg-gray-800 text-green-400 text-xs font-mono"
@@ -386,7 +411,7 @@ const ModernProjectsPage = () => {
                             {tech}
                           </span>
                         ))}
-                        {project.tech.length > 3 && (
+                        {Array.isArray(project.tech) && project.tech.length > 3 && (
                           <span className="px-1.5 py-0.5 bg-gray-800 text-gray-400 text-xs">
                             +{project.tech.length - 3}
                           </span>
@@ -396,21 +421,17 @@ const ModernProjectsPage = () => {
                       {/* Actions */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3 text-xs text-gray-400">
-                          <div className="flex items-center space-x-1">
-                            <Star className="w-3 h-3" />
-                            <span>{project.stats.stars}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <GitBranch className="w-3 h-3" />
-                            <span>{project.stats.forks}</span>
-                          </div>
                         </div>
                         <div className="flex space-x-2">
                           {project.github && (
-                            <Github className="w-4 h-4 hover:text-green-400 transition-colors" />
+                            <a href={project.github} target="_blank" rel="noopener noreferrer">
+                              <Github className="w-6 h-6 hover:text-green-400 transition-colors" />
+                            </a>
                           )}
                           {project.live && (
-                            <ExternalLink className="w-4 h-4 hover:text-green-400 transition-colors" />
+                            <a href={project.live} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="w-6 h-6 hover:text-green-400 transition-colors" />
+                            </a>
                           )}
                         </div>
                       </div>
@@ -423,7 +444,7 @@ const ModernProjectsPage = () => {
             {/* No Results */}
             {filteredProjects.length === 0 && !isLoading && !error && (
               <div className="text-center py-16">
-                <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <ImageIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-gray-400 mb-2">No projects found</h3>
                 <p className="text-gray-500">Try adjusting your search or filter criteria</p>
               </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { X, Plus, Edit, Trash2, Save, FileText, Image, Terminal, Code, Layers, Server, Search, Loader2, Cpu } from 'lucide-react';
+import { X, Plus, Edit, Trash2, Save, FileText, Image, Terminal, Code, Layers, Server, Search, Loader2, Cpu, Database } from 'lucide-react';
+
 import axios from 'axios'; // Import axios
 import AdminAuthContext from '../context/AdminAuthContext';
 
@@ -20,18 +21,22 @@ const TechnologiesPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     iconUrl: '',
-    category: ''
+    category: 'all',
+    featured: false, // Add featured field
   });
 
   const categories = [
     { id: 'all', name: 'ALL TECHNOLOGIES', icon: Layers },
     { id: 'frontend', name: 'FRONTEND', icon: Code },
     { id: 'backend', name: 'BACKEND', icon: Server },
-    { id: 'devops', name: 'DEVOPS', icon: Cpu }
+    { id: 'devops', name: 'DEVOPS', icon: Cpu },
+    { id: 'database', name: 'DATABASE', icon: Database }, // New category
+    { id: 'mobile', name: 'MOBILE', icon: Terminal }, // New category
+    { id: 'cloud', name: 'CLOUD', icon: Layers }, // New category
   ];
 
   const filteredTechnologies = technologies.filter(tech => {
-    const matchesCategory = selectedCategory === 'all' || tech.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || tech.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch = tech.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -159,11 +164,13 @@ const TechnologiesPage = () => {
       setFormData(tech ? {
         name: tech.name,
         iconUrl: tech.iconUrl || '',
-        category: tech.category || ''
+        category: tech.category || 'all',
+        featured: tech.featured || false,
       } : {
         name: '',
         iconUrl: '',
-        category: ''
+        category: 'all',
+        featured: false,
       });
     }
     setSelectedFile(null); // Reset selected file on modal open
@@ -173,7 +180,7 @@ const TechnologiesPage = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setCurrentTechnology(null);
-    setFormData({ name: '', iconUrl: '', category: '' });
+    setFormData({ name: '', iconUrl: '', category: 'all', featured: false });
   };
 
   const handleFileChange = (e) => {
@@ -181,8 +188,8 @@ const TechnologiesPage = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const handleSubmit = async () => {
@@ -194,6 +201,7 @@ const TechnologiesPage = () => {
     const formDataToSend = new FormData();
     formDataToSend.append('name', formData.name);
     formDataToSend.append('category', formData.category);
+    formDataToSend.append('featured', formData.featured); // Append featured field
 
     if (selectedFile) {
       formDataToSend.append('iconUrl', selectedFile);
@@ -468,6 +476,11 @@ const TechnologiesPage = () => {
                       <div className="px-1 py-0.5 text-xs border-2 border-green-400 text-green-400 bg-black/50">
                         {tech.category ? tech.category.toUpperCase() : 'UNCATEGORIZED'}
                       </div>
+                      {tech.featured && (
+                        <div className="px-1 py-0.5 text-xs border-2 border-yellow-400 text-yellow-400 bg-black/50">
+                          FEATURED
+                        </div>
+                      )}
                     </div>
                     {tech.iconUrl ? (
                       <img src={tech.iconUrl} alt={tech.name} className="w-12 sm:w-16 h-12 sm:h-16 object-contain group-hover:scale-110 transition-transform duration-300" />
@@ -603,6 +616,20 @@ const TechnologiesPage = () => {
                           placeholder="frontend, backend, devops"
                           disabled={isLoading}
                         />
+                      </div>
+                      <div>
+                        <label className="flex items-center gap-2 text-green-400 text-xs sm:text-sm font-bold mb-2">
+                          <Layers size={12} /> Featured
+                        </label>
+                        <input
+                          type="checkbox"
+                          name="featured"
+                          checked={formData.featured}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-green-400 focus:ring-green-400 border-gray-700 rounded"
+                          disabled={isLoading}
+                        />
+                        <span className="text-gray-400 text-xs ml-2">Mark as featured</span>
                       </div>
                     </div>
                   </div>

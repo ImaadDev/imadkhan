@@ -125,10 +125,10 @@ const About = ({ isVisible, aboutRef }) => {
                       role: <span className="text-yellow-400">"Full Stack Developer"</span>,
                     </div>
                     <div className="pl-4 text-gray-300">
-                      experience: <span className="text-yellow-400">"4+ years"</span>,
+                      experience: <span className="text-yellow-400">"5+ years"</span>,
                     </div>
                     <div className="pl-4 text-gray-300">
-                      stack: <span className="text-yellow-400">["MongoDB", "Express", "React", "Node"]</span>,
+                      stack: <span className="text-yellow-400">["MongoDB", "Express", "React", "Node", "NextJS", "React Native"]</span>,
                     </div>
                     <div className="pl-4 text-gray-300">
                       frameworks: <span className="text-yellow-400">["Next.js", "React.js"]</span>,
@@ -163,7 +163,7 @@ const About = ({ isVisible, aboutRef }) => {
                   <div className="text-xs text-gray-400 uppercase tracking-wider">Projects</div>
                 </div>
                 <div className="text-center p-4 border border-green-400/20 bg-gray-900/50">
-                  <div className="text-2xl font-bold text-green-400">4+</div>
+                  <div className="text-2xl font-bold text-green-400">5+</div>
                   <div className="text-xs text-gray-400 uppercase tracking-wider">Years</div>
                 </div>
                 <div className="text-center p-4 border border-green-400/20 bg-gray-900/50">
@@ -190,12 +190,12 @@ const About = ({ isVisible, aboutRef }) => {
                   <div className="w-full h-px bg-green-400/20"></div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400 text-sm">Database</span>
-                    <span className="text-green-400 text-sm font-mono">MongoDB</span>
+                    <span className="text-green-400 text-sm font-mono">MongoDB / PostgreSQL / MySQL</span>
                   </div>
                   <div className="w-full h-px bg-green-400/20"></div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400 text-sm">Deployment</span>
-                    <span className="text-green-400 text-sm font-mono">AWS / Vercel</span>
+                    <span className="text-green-400 text-sm font-mono">AWS / Vercel / Render / Netlify / Hostinger</span>
                   </div>
                 </div>
               </div>

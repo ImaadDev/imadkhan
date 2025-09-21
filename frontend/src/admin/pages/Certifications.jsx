@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { X, Plus, Edit, Trash2, Save, Calendar, Book, User, Link, Image, FileText, Terminal, Code, Layers, Award, Search, Loader2 } from 'lucide-react';
+import { X, Plus, Edit, Trash2, Save, Calendar, Book, User, Link, Image, FileText, Terminal, Code, Layers, Award, Search, Loader2, GitBranch } from 'lucide-react';
 import axios from 'axios'; // Import axios
 import AdminAuthContext from '../context/AdminAuthContext';
 
@@ -25,20 +25,25 @@ const CertificationsPage = () => {
     credentialID: '',
     credentialURL: '',
     imageUrl: '',
-    category: ''
+    category: 'all',
+    tags: '', // Add tags field to formData
   });
 
   const categories = [
     { id: 'all', name: 'ALL CERTIFICATIONS', icon: Layers },
     { id: 'technical', name: 'TECHNICAL', icon: Code },
     { id: 'professional', name: 'PROFESSIONAL', icon: Award },
-    { id: 'academic', name: 'ACADEMIC', icon: Book }
+    { id: 'academic', name: 'ACADEMIC', icon: Book },
+    { id: 'cloud', name: 'CLOUD', icon: Terminal }, // New category
+    { id: 'devops', name: 'DEVOPS', icon: GitBranch }, // New category
+    { id: 'cybersecurity', name: 'CYBERSECURITY', icon: User }, // New category
   ];
 
   const filteredCertifications = certifications.filter(cert => {
-    const matchesCategory = selectedCategory === 'all' || cert.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || cert.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch = cert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         cert.issuingOrganization.toLowerCase().includes(searchTerm.toLowerCase());
+                         cert.issuingOrganization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (Array.isArray(cert.tags) && cert.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))); // Include tags in search
     return matchesCategory && matchesSearch;
   });
 
@@ -170,9 +175,10 @@ const CertificationsPage = () => {
         credentialID: cert.credentialID || '',
         credentialURL: cert.credentialURL || '',
         imageUrl: cert.imageUrl || '',
-        category: cert.category || ''
+        category: cert.category || 'all',
+        tags: cert.tags ? cert.tags.join(', ') : '' // Populate tags
       } : {
-        name: '', issuingOrganization: '', issueDate: '', expirationDate: '', credentialID: '', credentialURL: '', imageUrl: '', category: ''
+        name: '', issuingOrganization: '', issueDate: '', expirationDate: '', credentialID: '', credentialURL: '', imageUrl: '', category: 'all', tags: ''
       });
     }
     setSelectedFile(null); // Reset selected file on modal open
@@ -182,7 +188,7 @@ const CertificationsPage = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setCurrentCertification(null);
-    setFormData({ name: '', issuingOrganization: '', issueDate: '', expirationDate: '', credentialID: '', credentialURL: '', imageUrl: '', category: '' });
+    setFormData({ name: '', issuingOrganization: '', issueDate: '', expirationDate: '', credentialID: '', credentialURL: '', imageUrl: '', category: 'all', tags: '' });
   };
 
   const handleFileChange = (e) => {
@@ -208,6 +214,7 @@ const CertificationsPage = () => {
     if (formData.credentialID) formDataToSend.append('credentialID', formData.credentialID);
     if (formData.credentialURL) formDataToSend.append('credentialURL', formData.credentialURL);
     if (formData.category) formDataToSend.append('category', formData.category);
+    if (formData.tags) formDataToSend.append('tags', formData.tags); // Append tags
 
     if (selectedFile) {
       formDataToSend.append('imageUrl', selectedFile);
@@ -486,7 +493,7 @@ const CertificationsPage = () => {
                     <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-300"></div>
                     <div className="absolute top-1 sm:top-2 right-1 sm:right-2 flex space-x-1">
                       <div className="px-1 py-0.5 text-xs border-2 border-green-400 text-green-400 bg-black/50">
-                        {cert.category ? cert.category.toUpperCase() : 'UNCATEGORIZED'}
+                        {cert.category ? cert.category.toUpperCase() : 'ALL'}
                       </div>
                     </div>
                     {cert.imageUrl ? (
@@ -498,6 +505,16 @@ const CertificationsPage = () => {
                   <div className="p-3 sm:p-4">
                     <h3 className="font-bold text-white mb-2 text-sm sm:text-base group-hover:text-green-400 transition-colors">{cert.name}</h3>
                     <p className="text-gray-400 text-xs sm:text-sm mb-3 line-clamp-2">{cert.issuingOrganization}</p>
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {Array.isArray(cert.tags) && cert.tags.slice(0, window.innerWidth < 640 ? 2 : 3).map((tag) => (
+                        <span key={tag} className="px-1 sm:px-1.5 py-0.5 bg-gray-800 text-green-400 text-xs font-mono">
+                          {tag}
+                        </span>
+                      ))}
+                      {Array.isArray(cert.tags) && cert.tags.length > (window.innerWidth < 640 ? 2 : 3) && (
+                        <span className="px-1 sm:px-1.5 py-0.5 bg-gray-800 text-gray-400 text-xs">+{cert.tags.length - (window.innerWidth < 640 ? 2 : 3)}</span>
+                      )}
+                    </div>
                     <div className="flex items-center justify-between text-xs mb-4">
                       <div className="flex items-center space-x-2 sm:space-x-3">
                         {cert.issueDate && (
@@ -537,7 +554,7 @@ const CertificationsPage = () => {
                         className="bg-red-500/10 hover:bg-red-500/20 border-2 border-red-500/30 hover:border-red-500 text-red-400 py-1.5 sm:py-2 px-2 sm:px-3 flex items-center gap-1 sm:gap-2 text-xs font-bold transition-all"
                         disabled={isLoading}
                       >
-                        <Trash2 size={12} /> Delete
+                        <Trash2 size={14} /> Delete
                       </button>
                     </div>
                   </div>
@@ -707,15 +724,33 @@ const CertificationsPage = () => {
                       </div>
                       <div>
                         <label className="flex items-center gap-2 text-green-400 text-xs sm:text-sm font-bold mb-2">
-                          <Layers size={12} /> Category
+                          <Layers size={12} /> Category [Required]
                         </label>
-                        <input
-                          type="text"
+                        <select
                           name="category"
                           value={formData.category}
                           onChange={handleInputChange}
                           className="w-full bg-gray-950/50 border-2 border-green-400/50 focus:border-green-400 text-white p-2 sm:p-3 outline-none transition-all placeholder-gray-400/30"
-                          placeholder="technical, professional, academic"
+                          required
+                          disabled={isLoading}
+                        >
+                          <option value="" disabled>Select a category</option>
+                          {categories.filter(cat => cat.id !== 'all').map(cat => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="flex items-center gap-2 text-green-400 text-xs sm:text-sm font-bold mb-2">
+                          <Layers size={12} /> Tags [Comma-separated]
+                        </label>
+                        <input
+                          type="text"
+                          name="tags"
+                          value={formData.tags}
+                          onChange={handleInputChange}
+                          className="w-full bg-gray-950/50 border-2 border-green-400/50 focus:border-green-400 text-white p-2 sm:p-3 outline-none transition-all placeholder-gray-400/30"
+                          placeholder="React, Node.js, Cloud"
                           disabled={isLoading}
                         />
                       </div>

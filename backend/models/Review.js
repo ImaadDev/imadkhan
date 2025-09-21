@@ -18,6 +18,10 @@ const ReviewSchema = mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    featured: {
+        type: Boolean,
+        default: false,
+    },
     // Add more fields as per your Reviews.jsx component
 }, { timestamps: true });
 

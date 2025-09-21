@@ -40,7 +40,7 @@ export const createBlogEntry = async (req, res) => {
             description,
             longDescription,
             category,
-            tags,
+            tags: Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim()),
             author,
             date,
             featured,
@@ -69,7 +69,7 @@ export const updateBlogEntry = async (req, res) => {
     if (description) blogFields.description = description;
     if (longDescription) blogFields.longDescription = longDescription;
     if (category) blogFields.category = category;
-    if (tags) blogFields.tags = tags;
+    if (tags) blogFields.tags = Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim());
     if (author) blogFields.author = author;
     if (date) blogFields.date = date;
     if (featured) blogFields.featured = featured;

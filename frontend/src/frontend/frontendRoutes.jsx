@@ -9,6 +9,7 @@ import ContactUsPage from './pages/ContactUsPage';
 import ThreeDLayout from './components/ThreeDLayout';
 import Footer from './components/Footer';
 import LoginPage from './pages/LoginPage';
+import BlogDetailsPage from './pages/BlogDetailsPage'; // Import BlogDetailsPage
 
 const FrontendRoutes = () => {
     const location = useLocation();
@@ -26,6 +27,7 @@ const FrontendRoutes = () => {
                     <Route path="/certifications" element={<CertificationsPage />} />
                     <Route path="/projects" element={<ProjectsPage />} />
                     <Route path="/blogs" element={<BlogsPage />} />
+                    <Route path="/blogs/:id" element={<BlogDetailsPage />} /> {/* New route for Blog Details */}
                     <Route path="/about" element={<AboutMePage />} />
                     <Route path="/contact" element={<ContactUsPage />} />
                     <Route path="/login" element={<LoginPage />} />

@@ -11,10 +11,12 @@ import {
   Feather,
   Calendar,
   Tag,
-  Loader2
+  Loader2,
+  Server
 } from 'lucide-react';
 import AuthContext from '../context/AuthContext.jsx';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const ModernBlogPage = () => {
   const { BackendUrl } = useContext(AuthContext);
@@ -125,15 +127,19 @@ const ModernBlogPage = () => {
 
   const categories = [
     { id: 'all', name: 'ALL POSTS', icon: Layers },
-    { id: 'frontend', name: 'FRONTEND', icon: Feather },
-    { id: 'backend', name: 'BACKEND', icon: Book },
-    { id: 'fullstack', name: 'FULL STACK', icon: Code }
+    { id: 'frontend', name: 'FRONTEND', icon: Code },
+    { id: 'backend', name: 'BACKEND', icon: Server },
+    { id: 'fullstack', name: 'FULL STACK', icon: Layers },
+    { id: 'ai', name: 'AI & ML', icon: Sparkles },
+    { id: 'devops', name: 'DEVOPS', icon: Github },
+    { id: 'cybersecurity', name: 'CYBERSECURITY', icon: ExternalLink },
+    { id: 'cloud', name: 'CLOUD', icon: Book },
   ];
 
   const filteredPosts = blogs.filter(post => {
-    const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || post.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+                          (Array.isArray(post.tags) && post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
     return matchesCategory && matchesSearch;
   });
 
@@ -304,7 +310,8 @@ const ModernBlogPage = () => {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                   {featuredPosts.slice(0, 2).map((post, index) => (
-                    <div
+                    <Link
+                      to={`/blogs/${post.id}`}
                       key={post.id}
                       className="bg-gray-950/90 border-2 border-gray-700 overflow-hidden group cursor-pointer transition-all duration-500 hover:border-green-400/50"
                       onMouseEnter={() => setHoveredPost(post.id)}
@@ -322,6 +329,11 @@ const ModernBlogPage = () => {
                           <div className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs border border-yellow-400 text-yellow-400 bg-black/50`}>
                             FEATURED
                           </div>
+                          {post.category && (
+                            <div className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs border border-green-400 text-green-400 bg-black/50`}>
+                              {post.category.toUpperCase()}
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -334,7 +346,7 @@ const ModernBlogPage = () => {
                         
                         {/* Tags */}
                         <div className="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
-                          {post.tags.map((tag) => (
+                          {Array.isArray(post.tags) && post.tags.map((tag) => (
                             <span
                               key={tag}
                               className="px-1.5 sm:px-2 py-0.5 bg-gray-800 text-green-400 text-xs font-mono border border-gray-600"
@@ -361,7 +373,7 @@ const ModernBlogPage = () => {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -382,7 +394,8 @@ const ModernBlogPage = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {filteredPosts.map((post, index) => (
-                  <div
+                  <Link
+                    to={`/blogs/${post.id}`}
                     key={post.id}
                     className="bg-gray-950/90 border-2 border-gray-800 overflow-hidden group cursor-pointer transition-all duration-300 hover:border-green-400/50 hover:bg-gray-900/50"
                     style={{ animationDelay: `${index * 0.1}s` }}
@@ -416,7 +429,7 @@ const ModernBlogPage = () => {
                       
                       {/* Tags */}
                       <div className="flex flex-wrap gap-1 mb-2 sm:mb-3">
-                        {post.tags.slice(0, 3).map((tag) => (
+                        {Array.isArray(post.tags) && post.tags.slice(0, 3).map((tag) => (
                           <span
                             key={tag}
                             className="px-1 sm:px-1.5 py-0.5 bg-gray-800 text-green-400 text-xs font-mono"
@@ -424,7 +437,7 @@ const ModernBlogPage = () => {
                             {tag}
                           </span>
                         ))}
-                        {post.tags.length > 3 && (
+                        {Array.isArray(post.tags) && post.tags.length > 3 && (
                           <span className="px-1 sm:px-1.5 py-0.5 bg-gray-800 text-gray-400 text-xs">
                             +{post.tags.length - 3}
                           </span>
@@ -445,7 +458,7 @@ const ModernBlogPage = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

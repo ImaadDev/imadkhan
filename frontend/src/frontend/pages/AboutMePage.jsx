@@ -93,7 +93,7 @@ const ModernAboutPage = () => {
               </div>
               <div className="w-px h-8 bg-green-400/30"></div>
               <div className="text-right">
-                <div className="text-green-400 text-2xl font-mono">4+</div>
+                <div className="text-green-400 text-2xl font-mono">5+</div>
                 <div className="text-gray-400 text-xs uppercase tracking-wider">Years</div>
               </div>
             </div>
@@ -213,7 +213,7 @@ const ModernAboutPage = () => {
                     "name": <span className="text-yellow-400">"Full Stack Developer"</span>,
                   </div>
                   <div className="text-gray-300 ml-4">
-                    "experience": <span className="text-yellow-400">"4+ years"</span>,
+                    "experience": <span className="text-yellow-400">"5+ years"</span>,
                   </div>
                   <div className="text-gray-300 ml-4">
                     "stack": <span className="text-yellow-400">["M", "E", "R", "N"]</span>,
@@ -241,14 +241,14 @@ const ModernAboutPage = () => {
             }`}>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gray-900 border-2 border-gray-700 p-6 text-center group hover:border-green-400/50 transition-colors">
-                  <div className="text-3xl font-bold text-green-400 mb-2">50+</div>
+                  <div className="text-3xl font-bold text-green-400 mb-2">30+</div>
                   <div className="text-gray-400 text-sm uppercase tracking-wider">Projects</div>
                   <div className="mt-2">
                     <GitBranch className="w-5 h-5 text-green-400/50 mx-auto" />
                   </div>
                 </div>
                 <div className="bg-gray-900 border-2 border-gray-700 p-6 text-center group hover:border-green-400/50 transition-colors">
-                  <div className="text-3xl font-bold text-green-400 mb-2">4+</div>
+                  <div className="text-3xl font-bold text-green-400 mb-2">5+</div>
                   <div className="text-gray-400 text-sm uppercase tracking-wider">Years</div>
                   <div className="mt-2">
                     <Zap className="w-5 h-5 text-green-400/50 mx-auto" />
@@ -271,8 +271,8 @@ const ModernAboutPage = () => {
                   {[
                     { layer: 'CLIENT', tech: 'React.js / Next.js', icon: Monitor },
                     { layer: 'SERVER', tech: 'Node.js / Express.js', icon: Server },
-                    { layer: 'DATABASE', tech: 'MongoDB / PostgreSQL', icon: Database },
-                    { layer: 'DEPLOY', tech: 'AWS / Vercel / Docker', icon: Globe }
+                    { layer: 'DATABASE', tech: 'MongoDB / PostgreSQL / MySQL', icon: Database },
+                    { layer: 'DEPLOY', tech: 'AWS / Vercel / Docker / Render', icon: Globe }
                   ].map((item, index) => {
                     const Icon = item.icon;
                     return (

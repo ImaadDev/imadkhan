@@ -17,7 +17,7 @@ export const getReviewEntries = async (req, res) => {
 // @route   POST /api/reviews
 // @access  Public (should be private in a real app)
 export const createReviewEntry = async (req, res) => {
-    const { reviewerName, reviewContent, rating, date } = req.body;
+    const { reviewerName, reviewContent, rating, date, featured } = req.body;
 
     try {
         const newReview = new Review({
@@ -25,6 +25,7 @@ export const createReviewEntry = async (req, res) => {
             reviewContent,
             rating,
             date,
+            featured,
         });
 
         const review = await newReview.save();
@@ -39,13 +40,14 @@ export const createReviewEntry = async (req, res) => {
 // @route   PUT /api/reviews/:id
 // @access  Public (should be private in a real app)
 export const updateReviewEntry = async (req, res) => {
-    const { reviewerName, reviewContent, rating, date } = req.body;
+    const { reviewerName, reviewContent, rating, date, featured } = req.body;
 
     const reviewFields = {};
     if (reviewerName) reviewFields.reviewerName = reviewerName;
     if (reviewContent) reviewFields.reviewContent = reviewContent;
     if (rating) reviewFields.rating = rating;
     if (date) reviewFields.date = date;
+    if (typeof featured === 'boolean') reviewFields.featured = featured; // Only update if explicitly provided
 
     try {
         let review = await Review.findById(req.params.id);

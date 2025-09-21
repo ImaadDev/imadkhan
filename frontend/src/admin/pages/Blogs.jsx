@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { X, Plus, Edit, Trash2, Save, Calendar,Zap, User, Tag, Clock, Image, FileText, Terminal, Code, Layers, Book, Feather, Search, Loader2 } from 'lucide-react';
+import { X, Plus, Edit, Trash2, Save, Calendar,Zap, User, Tag, Clock, Image, FileText, Terminal, Code, Layers, Book, Feather, Search, Loader2, Server, GitBranch, Award, Smartphone } from 'lucide-react';
 import axios from 'axios'; // Import axios
 import AdminAuthContext from '../context/AdminAuthContext';
 
@@ -21,7 +21,7 @@ const AdminBlogManagement = () => {
     title: '',
     description: '',
     longDescription: '',
-    category: '',
+    category: 'all',
     tags: '',
     author: '',
     date: '',
@@ -32,13 +32,17 @@ const AdminBlogManagement = () => {
 
   const categories = [
     { id: 'all', name: 'ALL POSTS', icon: Layers },
-    { id: 'frontend', name: 'FRONTEND', icon: Feather },
-    { id: 'backend', name: 'BACKEND', icon: Book },
-    { id: 'fullstack', name: 'FULL STACK', icon: Code }
+    { id: 'frontend', name: 'FRONTEND', icon: Code },
+    { id: 'backend', name: 'BACKEND', icon: Server },
+    { id: 'fullstack', name: 'FULL STACK', icon: Layers },
+    { id: 'ai', name: 'AI & ML', icon: Zap },
+    { id: 'devops', name: 'DEVOPS', icon: GitBranch },
+    { id: 'cybersecurity', name: 'CYBERSECURITY', icon: Award },
+    { id: 'cloud', name: 'CLOUD', icon: Smartphone },
   ];
 
   const filteredBlogs = blogs.filter(blog => {
-    const matchesCategory = selectedCategory === 'all' || blog.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || blog.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          blog.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesCategory && matchesSearch;
@@ -176,7 +180,7 @@ const AdminBlogManagement = () => {
         readTime: blog.readTime,
         imageUrl: blog.imageUrl || ''
       } : {
-        title: '', description: '', longDescription: '', category: '', tags: '', author: '', date: '', featured: false, readTime: '', imageUrl: ''
+        title: '', description: '', longDescription: '', category: 'all', tags: '', author: '', date: '', featured: false, readTime: '', imageUrl: ''
       });
     }
     setSelectedFile(null); // Reset selected file on modal open
@@ -186,7 +190,7 @@ const AdminBlogManagement = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setCurrentBlog(null);
-    setFormData({ title: '', description: '', longDescription: '', category: '', tags: '', author: '', date: '', featured: false, readTime: '', imageUrl: '' });
+    setFormData({ title: '', description: '', longDescription: '', category: 'all', tags: '', author: '', date: '', featured: false, readTime: '', imageUrl: '' });
   };
 
   const handleFileChange = (e) => {
@@ -211,7 +215,7 @@ const AdminBlogManagement = () => {
     formDataToSend.append('description', formData.description);
     formDataToSend.append('longDescription', formData.longDescription);
     formDataToSend.append('category', formData.category);
-    formDataToSend.append('tags', JSON.stringify(tagsArray)); // Send tags as JSON string
+    formDataToSend.append('tags', tagsArray); // Send tags as an array
     formDataToSend.append('author', formData.author);
     formDataToSend.append('date', new Date(formData.date).toISOString());
     formDataToSend.append('featured', formData.featured);
@@ -462,6 +466,11 @@ const AdminBlogManagement = () => {
                       <div className="px-2 py-1 text-xs border-2 border-yellow-400 text-yellow-400 bg-black/50">
                         FEATURED
                       </div>
+                      {blog.category && (
+                        <div className="px-2 py-1 text-xs border border-green-400 text-green-400 bg-black/50">
+                          {blog.category.toUpperCase()}
+                        </div>
+                      )}
                     </div>
                     {blog.imageUrl ? (
                       <img src={blog.imageUrl} alt={blog.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -473,7 +482,7 @@ const AdminBlogManagement = () => {
                     <h3 className="text-xl font-bold text-white mb-2 group-hover:text-green-400 transition-colors">{blog.title}</h3>
                     <p className="text-gray-400 text-sm mb-4">{blog.longDescription}</p>
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {blog.tags.map((tag) => (
+                      {Array.isArray(blog.tags) && blog.tags.map((tag) => (
                         <span key={tag} className="px-2 py-1 bg-gray-800 text-green-400 text-xs border-2 border-gray-600">
                           {tag}
                         </span>
@@ -551,12 +560,12 @@ const AdminBlogManagement = () => {
                     <h3 className="font-bold text-white mb-2 group-hover:text-green-400 transition-colors">{blog.title}</h3>
                     <p className="text-gray-400 text-sm mb-3 line-clamp-2">{blog.description}</p>
                     <div className="flex flex-wrap gap-1 mb-3">
-                      {blog.tags.slice(0, 3).map((tag) => (
+                      {Array.isArray(blog.tags) && blog.tags.slice(0, 3).map((tag) => (
                         <span key={tag} className="px-1.5 py-0.5 bg-gray-800 text-green-400 text-xs font-mono">
                           {tag}
                         </span>
                       ))}
-                      {blog.tags.length > 3 && (
+                      {Array.isArray(blog.tags) && blog.tags.length > 3 && (
                         <span className="px-1.5 py-0.5 bg-gray-800 text-gray-400 text-xs">+{blog.tags.length - 3}</span>
                       )}
                     </div>
@@ -698,16 +707,19 @@ const AdminBlogManagement = () => {
                       </div>
                       <div>
                         <label className="flex items-center gap-2 text-green-400 text-sm font-bold mb-2"><Tag size={14} /> Category [Required]</label>
-                        <input
-                          type="text"
+                        <select
                           name="category"
                           value={formData.category}
                           onChange={handleInputChange}
                           className="w-full bg-gray-950/50 border-2 border-green-400/50 focus:border-green-400 text-white p-3 outline-none transition-all placeholder-gray-400/30"
-                          placeholder="frontend, backend, fullstack"
                           required
                           disabled={isLoading}
-                        />
+                        >
+                          <option value="" disabled>Select a category</option>
+                          {categories.filter(cat => cat.id !== 'all').map(cat => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                          ))}
+                        </select>
                       </div>
                       <div>
                         <label className="block text-green-400 text-sm font-bold mb-2">Tags [Comma-separated]</label>

@@ -291,7 +291,7 @@ const ModernHeroSection = () => {
                             <div className="text-gray-400 text-xs uppercase tracking-wider">Years</div>
                           </div>
                           <div className="bg-black/50 backdrop-blur-sm border border-gray-700 p-3 text-center">
-                            <div className="text-green-400 text-xl font-bold">50+</div>
+                            <div className="text-green-400 text-xl font-bold">30+</div>
                             <div className="text-gray-400 text-xs uppercase tracking-wider">Projects</div>
                           </div>
                           <div className="bg-black/50 backdrop-blur-sm border border-gray-700 p-3 text-center">

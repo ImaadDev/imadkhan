@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Award, Code, Database, Cloud, Shield, Cpu, Globe, Zap, CheckCircle, ArrowRight, Loader2, Search } from 'lucide-react';
+import { Award, Code, Database, Cloud, Shield, Cpu, Globe, Zap, CheckCircle, ArrowRight, Loader2, Search, Book } from 'lucide-react';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext.jsx';
 
@@ -18,6 +18,8 @@ const ModernCertifications = () => {
   const [certifications, setCertifications] = useState([]); // State for fetched certifications
   const [isLoading, setIsLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
+  const [selectedCategory, setSelectedCategory] = useState('all'); // New state for category filter
+  const [searchTerm, setSearchTerm] = useState(''); // New state for search term
 
   useEffect(() => {
     const timers = [
@@ -54,7 +56,7 @@ const ModernCertifications = () => {
           level: cert.category, // Using category as level for display
           icon: <Award className="w-8 h-8 text-green-400" />,
           description: `Issued by ${cert.issuingOrganization} in ${new Date(cert.issueDate).getFullYear()}. Category: ${cert.category || 'N/A'}.`,
-          skills: [], // Assuming skills are not directly in backend model for frontend display
+          tags: cert.tags || [], // Use tags from backend
           credentialURL: cert.credentialURL
         })));
       } catch (err) {
@@ -69,7 +71,7 @@ const ModernCertifications = () => {
   // Derive stats and timeline from fetched certifications
   const totalCertifications = certifications.length;
   const uniqueIssuers = new Set(certifications.map(cert => cert.issuer)).size;
-  const validatedSkills = certifications.reduce((acc, cert) => acc + (cert.skills ? cert.skills.length : 0), 0);
+  const validatedSkills = certifications.reduce((acc, cert) => acc + (cert.tags ? cert.tags.length : 0), 0); // Count tags as validated skills
 
   const stats = [
     { number: `${totalCertifications}+`, label: "Certifications", icon: <Award className="w-6 h-6" /> },
@@ -83,6 +85,24 @@ const ModernCertifications = () => {
     event: cert.title,
     status: "completed" // Assuming all fetched certs are completed
   }));
+
+  const categories = [
+    { id: 'all', name: 'ALL CERTIFICATIONS', icon: Award },
+    { id: 'technical', name: 'TECHNICAL', icon: Code },
+    { id: 'professional', name: 'PROFESSIONAL', icon: Globe },
+    { id: 'academic', name: 'ACADEMIC', icon: Book },
+    { id: 'cloud', name: 'CLOUD', icon: Cloud },
+    { id: 'devops', name: 'DEVOPS', icon: Cpu },
+    { id: 'cybersecurity', name: 'CYBERSECURITY', icon: Shield },
+  ];
+
+  const filteredDisplayCertifications = certifications.filter(cert => {
+    const matchesCategory = selectedCategory === 'all' || cert.level.toLowerCase() === selectedCategory.toLowerCase();
+    const matchesSearch = cert.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          cert.issuer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (Array.isArray(cert.tags) && cert.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="min-h-screen mt-10 text-white overflow-hidden relative">
@@ -169,11 +189,49 @@ const ModernCertifications = () => {
               ))}
             </div>
 
+            {/* Filter & Search Section */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 sm:mb-12 space-y-4 lg:space-y-0">
+              {/* Category Filters */}
+              <div className="flex flex-wrap gap-2 sm:gap-3">
+                {categories.map((category) => {
+                  const Icon = category.icon;
+                  return (
+                    <button
+                      key={category.id}
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1 sm:py-2 border-2 font-mono text-xs sm:text-sm transition-all duration-300 ${
+                        selectedCategory === category.id
+                          ? 'border-green-400 bg-green-400/10 text-green-400'
+                          : 'border-gray-700 text-gray-400 hover:border-green-400/50 hover:text-green-400'
+                      }`}
+                      aria-label={`Filter by ${category.name}`}
+                    >
+                      <Icon className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                      <span>{category.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Search */}
+              <div className="relative w-full lg:w-auto">
+                <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 w-3.5 sm:w-5 h-3.5 sm:h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search certifications or tags..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="bg-gray-900 border-2 border-gray-700 pl-8 sm:pl-10 pr-3 sm:pr-4 py-1 sm:py-2 text-white placeholder-gray-400 focus:border-green-400 focus:outline-none transition-colors duration-300 w-full lg:w-80 text-xs sm:text-sm"
+                  aria-label="Search certifications or tags"
+                />
+              </div>
+            </div>
+
             {/* Certifications Grid */}
             <div className={`grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20 transform transition-all duration-1000 delay-500 ${
               isVisible.certifications ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
             }`}>
-              {certifications.map((cert, index) => (
+              {filteredDisplayCertifications.map((cert, index) => (
                 <div
                   key={cert.id}
                   className="bg-gray-900/80 border border-green-400/20 p-8 backdrop-blur-sm transform transition-all duration-500 hover:scale-105 hover:border-green-400 group cursor-pointer"
@@ -201,15 +259,15 @@ const ModernCertifications = () => {
                   <p className="text-gray-400 text-sm mb-4">{cert.issuer}</p>
                   <p className="text-gray-300 text-sm mb-6 leading-relaxed">{cert.description}</p>
 
-                  {/* Skills Tags (assuming empty for now as not in backend) */}
+                  {/* Skills Tags */}
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {cert.skills.map((skill, skillIndex) => (
+                    {Array.isArray(cert.tags) && cert.tags.map((tag, tagIndex) => (
                       <span
-                        key={skillIndex}
+                        key={tagIndex}
                         className="px-3 py-1 bg-green-400/10 text-green-400 text-xs font-mono border border-green-400/20 
                                  group-hover:bg-green-400/20 group-hover:border-green-400/40 transition-all duration-300"
                       >
-                        {skill}
+                        {tag}
                       </span>
                     ))}
                   </div>
@@ -237,11 +295,11 @@ const ModernCertifications = () => {
             </div>
 
             {/* No Results */}
-            {certifications.length === 0 && !isLoading && !error && (
+            {filteredDisplayCertifications.length === 0 && !isLoading && !error && (
               <div className="text-center py-12 sm:py-16">
                 <Search className="w-12 sm:w-16 h-12 sm:h-16 text-gray-600 mx-auto mb-4" />
                 <h3 className="text-lg sm:text-xl font-bold text-gray-400 mb-2">No certifications found</h3>
-                <p className="text-gray-500 text-sm sm:text-base">Check back soon for more!</p>
+                <p className="text-gray-500 text-sm sm:text-base">Try adjusting your search or filter criteria</p>
               </div>
             )}
 
