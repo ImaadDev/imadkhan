@@ -161,9 +161,6 @@ Contributions are welcome! Please follow these steps:
 5.  Push to the branch (`git push origin feature/your-feature-name`).
 6.  Open a Pull Request.
 
-## License
-
-This project is licensed under the MIT License.
 
 ---
 **Note**: This README provides a general overview. For detailed instructions or troubleshooting, refer to the inline comments in the code or open an issue on the repository.
