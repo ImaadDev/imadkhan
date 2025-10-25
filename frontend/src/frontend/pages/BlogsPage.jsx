@@ -146,7 +146,7 @@ const ModernBlogPage = () => {
   const featuredPosts = blogs.filter(post => post.featured);
 
   return (
-    <div className="min-h-screen text-white bg-black overflow-hidden relative font-mono">
+    <div className="min-h-screen text-white overflow-hidden relative font-mono">
       
       {/* Animated Background Grid */}
       <div className="absolute inset-0 opacity-5">

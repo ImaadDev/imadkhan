@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+  import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import { 
@@ -8,15 +9,21 @@ import {
   Calendar, 
   User, 
   Tag, 
-  Layers, 
-  Clock, 
-  ExternalLink,
-  Terminal,
-  FileText,
-  Eye,
+  Clock,
   Share2,
-  Bookmark
+  Bookmark,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Instagram,
 } from 'lucide-react';
+
+// Utility function to generate share URLs
+const getShareUrls = (url, title) => ({
+  facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+  twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
+  linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+});
 
 const BlogDetailsPage = () => {
   const { id } = useParams();
@@ -24,6 +31,8 @@ const BlogDetailsPage = () => {
   const [blog, setBlog] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isBookmarked, setIsBookmarked] = useState(false); // Bookmark state
+  const [toastMessage, setToastMessage] = useState(''); // Toast for feedback
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -43,17 +52,62 @@ const BlogDetailsPage = () => {
     fetchBlog();
   }, [id, BackendUrl]);
 
+  // Get the current URL for sharing
+  const currentUrl = window.location.href;
+
+  // Handle sharing via Web Share API or fallback to copy link
+  const handleShare = async () => {
+    const shareData = {
+      title: blog.title,
+      text: blog.description,
+      url: currentUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      // Fallback: Copy link to clipboard
+      handleCopyLink();
+    }
+  };
+
+  // Handle copying the link to clipboard
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(currentUrl).then(() => {
+      setToastMessage('Link copied to clipboard!');
+      setTimeout(() => setToastMessage(''), 3000); // Clear toast after 3 seconds
+    }).catch(err => {
+      console.error('Failed to copy link:', err);
+      setToastMessage('Failed to copy link.');
+      setTimeout(() => setToastMessage(''), 3000);
+    });
+  };
+
+  // Handle bookmark toggle (client-side only for demo)
+  const handleBookmark = () => {
+    setIsBookmarked(prev => !prev);
+    setToastMessage(isBookmarked ? 'Bookmark removed!' : 'Bookmarked!');
+    setTimeout(() => setToastMessage(''), 3000);
+    // Note: For persistent bookmarks, you'd need to integrate with a backend API
+  };
+
+  // Handle Instagram share (fallback message)
+  const handleInstagramShare = () => {
+    setToastMessage('Instagram sharing is not supported on web. Please share manually!');
+    setTimeout(() => setToastMessage(''), 3000);
+  };
+
+  // Early returns for loading, error, and not found states remain unchanged
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
-          <div className="bg-gray-900 border-2 border-green-400 p-8">
-            <Loader2 className="w-12 h-12 animate-spin text-green-400 mx-auto mb-4" />
-            <div className="font-mono text-green-400">
-              <div className="text-sm mb-2">// Loading blog post</div>
-              <div className="text-xs text-gray-400">Fetching data from server...</div>
-            </div>
-          </div>
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-700 text-lg font-medium">Loading article...</p>
         </div>
       </div>
     );
@@ -61,20 +115,19 @@ const BlogDetailsPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black p-6">
-        <div className="bg-gray-900 border-2 border-red-400 p-8 max-w-md w-full text-center">
-          <div className="text-red-400 font-mono mb-4">
-            <div className="text-lg mb-2">// Error occurred</div>
-            <div className="text-sm">{error}</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+        <div className="bg-white shadow-md p-8 max-w-md w-full text-center">
+          <div className="text-red-600 mb-4">
+            <p className="text-xl font-semibold mb-2">Error</p>
+            <p className="text-base">{error}</p>
           </div>
           <Link 
             to="/blogs" 
-            className="inline-flex items-center gap-2 bg-gray-800 border border-green-400/30 
-                     hover:border-green-400 text-green-400 px-4 py-2 font-mono text-sm 
-                     transition-all duration-300"
+            className="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 
+                     text-white px-6 py-3 font-semibold transition-colors duration-300"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>return to blogs</span>
+            <span>Back to Blogs</span>
           </Link>
         </div>
       </div>
@@ -83,272 +136,315 @@ const BlogDetailsPage = () => {
 
   if (!blog) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black p-6">
-        <div className="bg-gray-900 border-2 border-green-400/50 p-8 max-w-md w-full text-center">
-          <div className="text-gray-400 font-mono mb-4">
-            <div className="text-lg mb-2">// 404: Blog not found</div>
-            <div className="text-sm">The requested post does not exist.</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+        <div className="bg-white shadow-md p-8 max-w-md w-full text-center">
+          <div className="text-gray-700 mb-4">
+            <p className="text-xl font-semibold mb-2">404: Blog not found</p>
+            <p className="text-base">The requested post does not exist.</p>
           </div>
           <Link 
             to="/blogs" 
-            className="inline-flex items-center gap-2 bg-gray-800 border border-green-400/30 
-                     hover:border-green-400 text-green-400 px-4 py-2 font-mono text-sm 
-                     transition-all duration-300"
+            className="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 
+                     text-white px-6 py-3 font-semibold transition-colors duration-300"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>return to blogs</span>
+            <span>Back to Blogs</span>
           </Link>
         </div>
       </div>
     );
   }
 
+  // Generate share URLs
+  const shareUrls = getShareUrls(currentUrl, blog.title);
+
   return (
-    <div className="min-h-screen text-white relative">
-      {/* Background Grid */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px)
-          `,
-          backgroundSize: '30px 30px'
-        }} />
-      </div>
+    <div className="min-h-screen">
+      {/* SEO Meta Tags */}
+      <Helmet>
+        <title>{blog.title}</title>
+        <meta name="description" content={blog.description} />
+        <meta name="keywords" content={blog.tags?.join(', ')} />
+        <meta name="author" content={blog.author} />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
 
-      <div className="relative z-10">
-        {/* Header Navigation */}
-        <div className="border-b-2 border-green-400 bg-gray-900">
-          <div className="max-w-6xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <Link 
-                to="/blogs" 
-                className="group flex items-center gap-3 text-green-400 hover:text-green-300 
-                         font-mono transition-all duration-300"
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">
+          {toastMessage}
+        </div>
+      )}
+
+      {/* Header Navigation */}
+      <div className="shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link 
+              to="/blogs" 
+              className="flex items-center gap-2 text-white hover:text-green-600 
+                       font-medium transition-colors duration-300"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span>Back to Blog</span>
+            </Link>
+
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={handleShare}
+                className="p-2 border border-green-300 hover:border-white
+                         hover:text-white transition-all duration-300"
+                title="Share this article"
               >
-                <div className="bg-gray-800 border border-green-400/30 group-hover:border-green-400 
-                              p-2 transition-all duration-300">
-                  <ArrowLeft className="w-5 h-5" />
-                </div>
-                <span className="text-sm uppercase tracking-wider">Back to Blog</span>
-              </Link>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-3">
-                <button className="bg-gray-800 border border-green-400/30 hover:border-green-400 
-                                 text-green-400 p-2 transition-all duration-300">
-                  <Share2 className="w-4 h-4" />
-                </button>
-                <button className="bg-gray-800 border border-green-400/30 hover:border-green-400 
-                                 text-green-400 p-2 transition-all duration-300">
-                  <Bookmark className="w-4 h-4" />
-                </button>
-              </div>
+                <Share2 className="text-white w-5 h-5" />
+              </button>
+              <button 
+                onClick={handleBookmark}
+                className={`p-2 border ${isBookmarked ? 'bg-green-600 border-green-600' : 'border-green-300'} 
+                         hover:border-white hover:text-white transition-all duration-300`}
+                title={isBookmarked ? 'Remove bookmark' : 'Bookmark this article'}
+              >
+                <Bookmark className={`w-5 h-5 ${isBookmarked ? 'text-white' : 'text-white'}`} />
+              </button>
             </div>
           </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          {/* Terminal Header */}
-          <div className="mb-12">
-            <div className="bg-gray-900 border-2 border-green-400 max-w-4xl mx-auto">
-              <div className="bg-gray-800 border-b border-green-400 px-4 py-3 flex items-center gap-3">
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 bg-red-500"></div>
-                  <div className="w-3 h-3 bg-yellow-500"></div>
-                  <div className="w-3 h-3 bg-green-500"></div>
-                </div>
-                <span className="text-green-400 font-mono text-sm">blog-post-{id}.md</span>
-              </div>
-
-              <div className="p-6 font-mono">
-                <div className="flex items-center gap-2 mb-4">
-                  <Terminal className="w-5 h-5 text-green-400" />
-                  <span className="text-white">reader@blog:~$</span>
-                  <span className="text-green-400">cat blog-details.json</span>
-                  <span className="animate-pulse text-green-400">|</span>
-                </div>
-                
-                <div className="space-y-2 text-sm">
-                  <div className="text-gray-300">{`{`}</div>
-                  <div className="ml-4">
-                    <span className="text-green-400">"status"</span>
-                    <span className="text-white">: </span>
-                    <span className="text-orange-400">"published"</span>
-                    <span className="text-white">,</span>
-                  </div>
-                  <div className="ml-4">
-                    <span className="text-green-400">"author"</span>
-                    <span className="text-white">: </span>
-                    <span className="text-orange-400">"{blog.author}"</span>
-                    <span className="text-white">,</span>
-                  </div>
-                  <div className="ml-4">
-                    <span className="text-green-400">"readTime"</span>
-                    <span className="text-white">: </span>
-                    <span className="text-cyan-400">{blog.readTime || 5}</span>
-                    <span className="text-white">,</span>
-                  </div>
-                  <div className="ml-4">
-                    <span className="text-green-400">"category"</span>
-                    <span className="text-white">: </span>
-                    <span className="text-orange-400">"{blog.category || 'Development'}"</span>
-                  </div>
-                  <div className="text-gray-300">{`}`}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Article Content */}
-          <article className="max-w-4xl mx-auto">
-            {/* Title Section */}
-            <header className="mb-12">
-              <h1 className="text-4xl md:text-6xl font-black text-white font-mono mb-6 leading-tight">
-                {blog.title}
-                <span className="text-green-400">.</span>
-              </h1>
-              
-              <p className="text-xl text-gray-400 font-mono leading-relaxed mb-8 max-w-3xl">
-                {blog.description}
-              </p>
-
-              {/* Meta Information */}
-              <div className="bg-gray-900 border-2 border-green-400/30 p-6">
-                <div className="grid md:grid-cols-4 gap-4 text-center">
-                  <div className="flex flex-col items-center gap-2">
-                    <Calendar className="w-5 h-5 text-green-400" />
-                    <span className="text-xs text-gray-400 font-mono">PUBLISHED</span>
-                    <span className="text-sm text-white font-mono">
-                      {new Date(blog.date).toLocaleDateString()}
-                    </span>
-                  </div>
-                  
-                  <div className="flex flex-col items-center gap-2">
-                    <User className="w-5 h-5 text-green-400" />
-                    <span className="text-xs text-gray-400 font-mono">AUTHOR</span>
-                    <span className="text-sm text-white font-mono">{blog.author}</span>
-                  </div>
-                  
-                  <div className="flex flex-col items-center gap-2">
-                    <Clock className="w-5 h-5 text-green-400" />
-                    <span className="text-xs text-gray-400 font-mono">READ TIME</span>
-                    <span className="text-sm text-white font-mono">{blog.readTime || 5} min</span>
-                  </div>
-                  
-                  <div className="flex flex-col items-center gap-2">
-                    <Layers className="w-5 h-5 text-green-400" />
-                    <span className="text-xs text-gray-400 font-mono">CATEGORY</span>
-                    <span className="text-sm text-white font-mono">{blog.category || 'DEV'}</span>
-                  </div>
-                </div>
-              </div>
-            </header>
-
-            {/* Featured Image */}
-            {blog.imageUrl && (
-              <div className="mb-12 relative group">
-                <div className="border-2 border-green-400/30 group-hover:border-green-400 
-                              transition-all duration-300 overflow-hidden">
-                  <img 
-                    src={blog.imageUrl} 
-                    alt={blog.title} 
-                    className="w-full h-auto object-cover transition-transform duration-700 
-                             group-hover:scale-105" 
-                  />
-                </div>
-                <div className="absolute top-4 right-4 bg-black/80 border border-green-400 
-                              px-3 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="text-green-400 font-mono text-xs">Featured Image</span>
-                </div>
-              </div>
-            )}
-
-            {/* Article Body */}
-            <div className="bg-gray-900 border-2 border-green-400/30 mb-12">
-              {/* Content Header */}
-              <div className="bg-gray-800 border-b border-green-400/30 px-6 py-3 flex items-center gap-3">
-                <FileText className="w-5 h-5 text-green-400" />
-                <span className="text-green-400 font-mono text-sm">Article Content</span>
-                <div className="ml-auto flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-400 animate-pulse"></div>
-                  <span className="text-green-400 font-mono text-xs">READING</span>
-                </div>
-              </div>
-
-              {/* Content Body */}
-              <div className="p-8">
-                <div className="prose prose-invert max-w-none text-gray-300 leading-relaxed font-mono">
-                  <div className="text-base leading-8 whitespace-pre-line">
-                    {blog.longDescription}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Tags Section */}
-            {blog.tags && Array.isArray(blog.tags) && blog.tags.length > 0 && (
-              <div className="mb-12">
-                <div className="bg-gray-900 border-2 border-green-400/30 p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Tag className="w-5 h-5 text-green-400" />
-                    <span className="text-green-400 font-mono text-sm uppercase tracking-wider">
-                      Tagged Topics
-                    </span>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-3">
-                    {blog.tags.map((tag, index) => (
-                      <span 
-                        key={index} 
-                        className="bg-green-400/10 border border-green-400/30 text-green-400 
-                                 px-4 py-2 font-mono text-sm hover:bg-green-400/20 
-                                 hover:border-green-400/60 transition-all duration-300 cursor-pointer"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Footer Actions */}
-            <div className="bg-gray-900 border-2 border-green-400 p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Eye className="w-5 h-5 text-green-400" />
-                  <span className="text-green-400 font-mono text-sm">
-                    Thanks for reading this post!
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <button className="bg-gray-800 border border-green-400/30 hover:border-green-400 
-                                   hover:bg-green-400/10 text-green-400 px-6 py-2 font-mono text-sm 
-                                   transition-all duration-300 flex items-center gap-2">
-                    <Share2 className="w-4 h-4" />
-                    <span>Share Post</span>
-                  </button>
-                  
-                  <Link 
-                    to="/blogs"
-                    className="bg-green-400/10 border border-green-400 hover:bg-green-400 
-                             hover:text-black text-green-400 px-6 py-2 font-mono text-sm 
-                             transition-all duration-300 flex items-center gap-2"
-                  >
-                    <FileText className="w-4 h-4" />
-                    <span>More Posts</span>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </article>
         </div>
       </div>
+
+      {/* Main Content */}
+      <article className="max-w-6xl mx-auto px-6 py-12">
+          {/* Article Header */}
+        <header className="mb-12">
+          {/* Category Badge */}
+          <div className="mb-6">
+            <span className="inline-block bg-green-600 text-white px-4 py-1.5 
+                           text-sm font-semibold uppercase tracking-wide">
+              {blog.category || 'Article'}
+            </span>
+          </div>
+
+          {/* Title */}
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-200 mb-6 leading-tight">
+            {blog.title}
+          </h1>
+          
+          {/* Description */}
+          <p className="text-xl text-gray-300 leading-relaxed mb-8">
+            {blog.description}
+          </p>
+
+          {/* Meta Information */}
+          <div className="flex flex-wrap items-center gap-6 text-gray-600 border-t border-b 
+                        border-gray-200 py-5">
+            <div className="flex items-center gap-2">
+              <User className="w-5 h-5 text-green-600" />
+              <span className="font-medium">{blog.author}</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-green-600" />
+              <span>{new Date(blog.date).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-green-600" />
+              <span>{blog.readTime || 5} min read</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Featured Image */}
+        {blog.imageUrl && (
+          <div className="mb-12 overflow-hidden shadow-lg">
+            <img 
+              src={blog.imageUrl} 
+              alt={blog.title} 
+              className="w-full h-auto object-cover" 
+            />
+          </div>
+        )}
+
+        {/* AdSense Ad Unit (Above Content) */}
+        <div className="my-8">
+          <ins
+            className="adsbygoogle"
+            style={{ display: 'block' }}
+            data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+            data-ad-slot="XXXXXXXXXX"
+            data-ad-format="auto"
+          ></ins>
+        </div>
+
+        {/* Article Content */}
+        <div className="prose prose-lg max-w-none mb-12">
+          <div className="text-gray-200 leading-relaxed space-y-6">
+            {(() => {
+              let sentenceCounter = 0; // Track sentences across all paragraphs
+              return blog.longDescription.split('\n\n').map((paragraph, index) => {
+                // HEADING LOGIC
+                const isHeading = paragraph.trim().startsWith('#') || 
+                                 (paragraph.split(' ').length < 20 && paragraph === paragraph.toUpperCase());
+                
+                if (isHeading) {
+                  const headingText = paragraph.replace(/^#+\s*/, '').trim();
+                  return (
+                    <h2 key={index} className="text-2xl md:text-3xl font-bold text-gray-200 mt-10 mb-4">
+                      {headingText}
+                    </h2>
+                  );
+                }
+                
+                // PARAGRAPH / SENTENCE LOGIC
+                const sentences = paragraph.split('. ').filter(sentence => sentence.trim() !== '');
+                
+                return (
+                  <p key={index} className="text-lg leading-relaxed text-gray-200">
+                    {sentences.map((sentence, sentenceIndex, array) => {
+                      if (sentence.trim() === '') return null;
+                      
+                      sentenceCounter++; // Increment global sentence counter
+                      const isBreakSentence = sentenceCounter % 5 === 0;
+                      const isLastSentenceInArray = sentenceIndex === array.length - 1;
+                      
+                      // Ensure sentence has a period unless it’s malformed
+                      const formattedSentence = sentence.endsWith('.') ? sentence : `${sentence}.`;
+                      
+                      return (
+                        <React.Fragment key={sentenceCounter}>
+                          <span>{formattedSentence}{isLastSentenceInArray ? '' : ' '}</span>
+                          {isBreakSentence && !isLastSentenceInArray && (
+                            <span className="block mb-4"></span>
+                          )}
+                          {/* AdSense Ad Unit (After 5th Sentence) */}
+                          {sentenceCounter === 5 && (
+                            <div className="my-6">
+                              <ins
+                                className="adsbygoogle"
+                                style={{ display: 'block' }}
+                                data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                                data-ad-slot="XXXXXXXXXX"
+                                data-ad-format="auto"
+                              ></ins>
+                            </div>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </p>
+                );
+              });
+            })()}
+          </div>
+        </div>
+
+        {/* Tags Section */}
+        {blog.tags && Array.isArray(blog.tags) && blog.tags.length > 0 && (
+          <div className="mb-12 p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <Tag className="w-5 h-5 text-green-500" />
+              <span className="font-semibold text-gray-200">Tags</span>
+            </div>
+            
+            <div className="flex flex-wrap gap-3">
+              {blog.tags.map((tag, index) => (
+                <span 
+                  key={index} 
+                  className="bg-green-500 hover:bg-green-100 text-white hover:text-green-700 
+                           px-4 py-2 text-sm font-medium transition-colors duration-300 cursor-pointer"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        {/* Share Section */}
+        <div className="p-8 shadow-sm">
+          <div className="text-center mb-6">
+            <h3 className="text-2xl font-bold text-gray-200 mb-2">Share This Article</h3>
+            <p className="text-gray-300">Spread the knowledge with your network</p>
+          </div>
+          
+          <div className="flex justify-center gap-4">
+            <a 
+              href={shareUrls.facebook}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 cursor-pointer bg-blue-600 hover:bg-blue-700 
+                       text-white px-6 py-3 font-semibold transition-colors duration-300"
+            >
+              <Facebook className="w-5 h-5" />
+              <span>Facebook</span>
+            </a>
+            
+            <a 
+              href={shareUrls.twitter}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 cursor-pointer bg-black hover:bg-slate-900 
+                       text-white px-6 py-3 font-semibold transition-colors duration-300"
+            >
+              <Twitter className="w-5 h-5" />
+              <span>X</span>
+            </a>
+            
+            <a 
+              href={shareUrls.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 cursor-pointer bg-blue-800 hover:bg-blue-900 
+                       text-white px-6 py-3 font-semibold transition-colors duration-300"
+            >
+              <Linkedin className="w-5 h-5" />
+              <span>LinkedIn</span>
+            </a>
+            
+            <button 
+              onClick={handleInstagramShare}
+              className="flex items-center gap-2 cursor-pointer bg-pink-600 hover:bg-pink-900 
+                       text-white px-6 py-3 font-semibold transition-colors duration-300"
+            >
+              <Instagram className="w-5 h-5" />
+              <span>Instagram</span>
+            </button>
+          </div>
+        </div>
+
+        {/* AdSense Ad Unit (Footer) */}
+        <div className="my-8">
+          <ins
+            className="adsbygoogle"
+            style={{ display: 'block' }}
+            data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+            data-ad-slot="XXXXXXXXXX"
+            data-ad-format="auto"
+          ></ins>
+        </div>
+
+        {/* Back to Blog Button */}
+        <div className="mt-12 text-center">
+          <Link 
+            to="/blogs"
+            className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-800 
+                     text-white px-8 py-4 font-semibold text-lg transition-colors duration-300 shadow-md hover:shadow-lg"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Explore More Articles</span>
+          </Link>
+        </div>
+      </article>
     </div>
   );
 };
 
 export default BlogDetailsPage;
+  
+  
+  
+  
+  
+  
