@@ -89,6 +89,7 @@ const ModernBlogPage = () => {
           id: blog._id,
           title: blog.title,
           category: blog.category,
+          slug: blog.slug, // ✅ important
           description: blog.description,
           longDescription: blog.longDescription,
           tags: blog.tags,
@@ -311,10 +312,10 @@ const ModernBlogPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                   {featuredPosts.slice(0, 2).map((post, index) => (
                     <Link
-                      to={`/blogs/${post.id}`}
+                      to={`/blogs/${post.slug}`}
                       key={post.id}
                       className="bg-gray-950/90 border-2 border-gray-700 overflow-hidden group cursor-pointer transition-all duration-500 hover:border-green-400/50"
-                      onMouseEnter={() => setHoveredPost(post.id)}
+                      onMouseEnter={() => setHoveredPost(post.slug)}
                       onMouseLeave={() => setHoveredPost(null)}
                     >
                       {/* Post Image */}
@@ -395,7 +396,7 @@ const ModernBlogPage = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {filteredPosts.map((post, index) => (
                   <Link
-                    to={`/blogs/${post.id}`}
+                    to={`/blogs/${post.slug}`}
                     key={post.id}
                     className="bg-gray-950/90 border-2 border-gray-800 overflow-hidden group cursor-pointer transition-all duration-300 hover:border-green-400/50 hover:bg-gray-900/50"
                     style={{ animationDelay: `${index * 0.1}s` }}

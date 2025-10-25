@@ -26,7 +26,7 @@ const getShareUrls = (url, title) => ({
 });
 
 const BlogDetailsPage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const { BackendUrl } = useContext(AuthContext);
   const [blog, setBlog] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +39,7 @@ const BlogDetailsPage = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`${BackendUrl}/api/blogs/${id}`);
+        const response = await axios.get(`${BackendUrl}/api/blogs/${slug}`);
         setBlog(response.data);
       } catch (err) {
         setError('Failed to load blog post. Please try again.');
@@ -50,7 +50,7 @@ const BlogDetailsPage = () => {
     };
 
     fetchBlog();
-  }, [id, BackendUrl]);
+  }, [slug, BackendUrl]);
 
   // Get the current URL for sharing
   const currentUrl = window.location.href;
@@ -136,9 +136,9 @@ const BlogDetailsPage = () => {
 
   if (!blog) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+      <div className="min-h-screen flex items-center justify-center p-6">
         <div className="bg-white shadow-md p-8 max-w-md w-full text-center">
-          <div className="text-gray-700 mb-4">
+          <div className="text-gray-200 mb-4">
             <p className="text-xl font-semibold mb-2">404: Blog not found</p>
             <p className="text-base">The requested post does not exist.</p>
           </div>

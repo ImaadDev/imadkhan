@@ -27,7 +27,7 @@ const FrontendRoutes = () => {
                     <Route path="/certifications" element={<CertificationsPage />} />
                     <Route path="/projects" element={<ProjectsPage />} />
                     <Route path="/blogs" element={<BlogsPage />} />
-                    <Route path="/blogs/:id" element={<BlogDetailsPage />} /> {/* New route for Blog Details */}
+                    <Route path="/blogs/:slug" element={<BlogDetailsPage />} /> {/* New route for Blog Details */}
                     <Route path="/about" element={<AboutMePage />} />
                     <Route path="/contact" element={<ContactUsPage />} />
                     <Route path="/login" element={<LoginPage />} />
