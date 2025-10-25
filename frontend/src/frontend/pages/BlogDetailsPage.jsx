@@ -369,7 +369,7 @@ const BlogDetailsPage = () => {
             <p className="text-gray-300">Spread the knowledge with your network</p>
           </div>
           
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-4">
             <a 
               href={shareUrls.facebook}
               target="_blank"
@@ -402,15 +402,6 @@ const BlogDetailsPage = () => {
               <Linkedin className="w-5 h-5" />
               <span>LinkedIn</span>
             </a>
-            
-            <button 
-              onClick={handleInstagramShare}
-              className="flex items-center gap-2 cursor-pointer bg-pink-600 hover:bg-pink-900 
-                       text-white px-6 py-3 font-semibold transition-colors duration-300"
-            >
-              <Instagram className="w-5 h-5" />
-              <span>Instagram</span>
-            </button>
           </div>
         </div>
 
